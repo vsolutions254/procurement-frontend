@@ -93,7 +93,7 @@ export default function InventoryPage() {
             Inventory Items (Goods)
           </Tabs.Tab>
           <Tabs.Tab value="services" leftSection={<IconFileText size={16} />}>
-            Intangibles (Services)
+            Services
           </Tabs.Tab>
         </Tabs.List>
 

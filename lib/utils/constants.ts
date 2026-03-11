@@ -226,26 +226,6 @@ export const nonTangibleCatalogueItems = [
   },
 ];
 
-export const catalogueCategories = [
-  "All Categories",
-  "Office Supplies",
-  "IT Equipment",
-  "Furniture",
-  "Marketing Materials",
-  "Facility Maintenance",
-  "Safety Equipment",
-];
-
-export const nonTangibleCategories = [
-  "All Categories",
-  "Travel",
-  "Transport",
-  "Professional Services",
-  "Consulting",
-  "Training",
-  "Marketing",
-];
-
 export const currencies = [
   { value: "KES", label: "Kenyan Shilling (KES)" },
   { value: "USD", label: "US Dollar (USD)" },
@@ -1193,17 +1173,6 @@ export const workflowStatuses = {
     "Completed",
     "Cancelled",
   ],
-};
-
-export const masterSettings = {
-  currency: "KES",
-  taxRate: 16,
-  companyName: "Procurement Solutions Ltd",
-  approvalLimits: {
-    manager: 100000,
-    director: 500000,
-    ceo: 1000000,
-  },
 };
 
 export const wishlistItems = [

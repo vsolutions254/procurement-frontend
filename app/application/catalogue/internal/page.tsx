@@ -6,12 +6,12 @@ import InternalCatalogPageHeader from "@/components/shared/catalogue/internal/pa
 import InternalCatalogTabsHeader from "@/components/shared/catalogue/internal/tabs-header";
 import ProductsView from "@/components/shared/catalogue/products/view/products-view";
 import ServicesView from "@/components/shared/catalogue/services/services-view";
+import { fetchCategories } from "@/lib/redux/features/products/categories/categoriesSlice";
 import { getProducts } from "@/lib/redux/features/products/productsSlice";
+import { fetchServiceCategories } from "@/lib/redux/features/services/categories/serviceCategoriesSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
-  catalogueCategories,
   nonTangibleCatalogueItems,
-  nonTangibleCategories,
   recommendedProducts,
   recommendedServices,
 } from "@/lib/utils/constants";
@@ -40,15 +40,21 @@ export default function InternalCatalogPage() {
   const dispatch = useAppDispatch();
 
   const { products, pagination } = useAppSelector((state) => state.products);
+  const { categories } = useAppSelector((state) => state.product_categories);
+  const { categories: serviceCategories } = useAppSelector(
+    (state) => state.service_categories,
+  );
 
   useEffect(() => {
     dispatch(getProducts({ page: 1 }));
+    dispatch(fetchCategories(1));
+    dispatch(fetchServiceCategories(1));
   }, [dispatch]);
 
   const currentItems =
     activeTab === "inventory" ? products || [] : nonTangibleCatalogueItems;
   const currentCategories =
-    activeTab === "inventory" ? catalogueCategories : nonTangibleCategories;
+    activeTab === "inventory" ? categories : serviceCategories;
 
   const handleApproveRecommendation = (id: string) => {
     console.log("Approving recommendation:", id);

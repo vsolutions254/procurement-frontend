@@ -1,11 +1,6 @@
 "use client";
 
 import {
-  masterSettings,
-  nonTangibleCategories,
-  currencies,
-} from "@/lib/utils/constants";
-import {
   Card,
   Text,
   Group,
@@ -39,6 +34,10 @@ import { Category } from "@/types/category";
 import AddCategoryModal from "@/components/shared/catalogue/add-category-modal";
 import { createCategory } from "@/lib/redux/features/products/categories/categoriesSlice";
 import { notifications } from "@mantine/notifications";
+import { createServiceCategory } from "@/lib/redux/features/services/categories/serviceCategoriesSlice";
+import GeneralSettings from "@/components/merchants/master-settings/general-settings";
+import CategoriesSettings from "@/components/merchants/master-settings/categories-settings";
+import ApprovalLimitsSettings from "@/components/merchants/master-settings/approval-limits-settings";
 
 export default function MasterSettingsPage() {
   const [activeTab, setActiveTab] = useState<string | null>("general");
@@ -54,7 +53,7 @@ export default function MasterSettingsPage() {
   const dispatch = useAppDispatch();
 
   const [categoryType, setCategoryType] = useState<"goods" | "services">(
-    "goods"
+    "goods",
   );
 
   const editor = useEditor({
@@ -95,15 +94,19 @@ export default function MasterSettingsPage() {
       return;
     }
 
+    const payload = {
+      name: newCategory,
+      description: categoryDescription,
+      image: categoryImage,
+    };
+
     setIsCreating(true);
     try {
-      await dispatch(
-        createCategory({
-          name: newCategory,
-          description: categoryDescription,
-          image: categoryImage,
-        })
-      ).unwrap();
+      if (categoryType === "services") {
+        await dispatch(createServiceCategory(payload)).unwrap();
+      } else {
+        await dispatch(createCategory(payload)).unwrap();
+      }
 
       notifications.show({
         title: "Success",
@@ -162,134 +165,15 @@ export default function MasterSettingsPage() {
           </Tabs.Tab>
         </Tabs.List>
 
-        <Tabs.Panel value="general" pt="md">
-          <Card shadow="sm" padding="lg" radius="md" withBorder>
-            <Title order={4} mb="md">
-              General Configuration
-            </Title>
-            <Stack gap="md">
-              <Group grow>
-                <TextInput
-                  label="Company Name"
-                  defaultValue={masterSettings.companyName}
-                />
-                <Select
-                  label="Default Currency"
-                  data={currencies}
-                  defaultValue={masterSettings.currency}
-                />
-              </Group>
-              <NumberInput
-                label="Tax Rate (%)"
-                defaultValue={masterSettings.taxRate}
-                min={0}
-                max={100}
-                decimalScale={2}
-              />
-              <Group justify="flex-end">
-                <Button>Save Changes</Button>
-              </Group>
-            </Stack>
-          </Card>
-        </Tabs.Panel>
+        <GeneralSettings />
 
-        <Tabs.Panel value="categories" pt="md">
-          <Tabs defaultValue="goods">
-            <Tabs.List>
-              <Tabs.Tab value="goods">Goods</Tabs.Tab>
-              <Tabs.Tab value="services">Services</Tabs.Tab>
-            </Tabs.List>
+        <CategoriesSettings
+          setCategoryType={setCategoryType}
+          setCategoryModalOpen={setCategoryModalOpen}
+          handleDeleteCategory={handleDeleteCategory}
+        />
 
-            <Tabs.Panel value="goods" pt="md">
-              <CategoriesTable
-                setCategoryType={setCategoryType}
-                setCategoryModalOpen={setCategoryModalOpen}
-                handleDeleteCategory={handleDeleteCategory}
-              />
-            </Tabs.Panel>
-
-            <Tabs.Panel value="services" pt="md">
-              <Card shadow="sm" padding="lg" radius="md" withBorder>
-                <Group justify="space-between" mb="md">
-                  <Title order={4}>Service Categories</Title>
-                  <Button
-                    leftSection={<IconPlus size={16} />}
-                    size="sm"
-                    onClick={() => {
-                      setCategoryType("services");
-                      setCategoryModalOpen(true);
-                    }}
-                  >
-                    Add Category
-                  </Button>
-                </Group>
-                <Table>
-                  <Table.Thead>
-                    <Table.Tr>
-                      <Table.Th>Category Name</Table.Th>
-                      <Table.Th>Services Count</Table.Th>
-                      <Table.Th>Actions</Table.Th>
-                    </Table.Tr>
-                  </Table.Thead>
-                  <Table.Tbody>
-                    {nonTangibleCategories.slice(1).map((category) => (
-                      <Table.Tr key={category}>
-                        <Table.Td>{category}</Table.Td>
-                        <Table.Td>
-                          <Badge variant="light" size="sm">
-                            8
-                          </Badge>
-                        </Table.Td>
-                        <Table.Td>
-                          {/* <Group gap="xs">
-                            <ActionIcon variant="subtle" color="blue">
-                              <IconEdit size={16} />
-                            </ActionIcon>
-                            <ActionIcon
-                              variant="subtle"
-                              color="red"
-                              onClick={() => handleDeleteCategory(category)}
-                            >
-                              <IconTrash size={16} />
-                            </ActionIcon>
-                          </Group> */}
-                        </Table.Td>
-                      </Table.Tr>
-                    ))}
-                  </Table.Tbody>
-                </Table>
-              </Card>
-            </Tabs.Panel>
-          </Tabs>
-        </Tabs.Panel>
-
-        <Tabs.Panel value="approvals" pt="md">
-          <Card shadow="sm" padding="lg" radius="md" withBorder>
-            <Title order={4} mb="md">
-              Approval Limits
-            </Title>
-            <Stack gap="md">
-              <NumberInput
-                label="Manager Approval Limit (KES)"
-                defaultValue={masterSettings.approvalLimits.manager}
-                thousandSeparator=","
-              />
-              <NumberInput
-                label="Director Approval Limit (KES)"
-                defaultValue={masterSettings.approvalLimits.director}
-                thousandSeparator=","
-              />
-              <NumberInput
-                label="CEO Approval Limit (KES)"
-                defaultValue={masterSettings.approvalLimits.ceo}
-                thousandSeparator=","
-              />
-              <Group justify="flex-end">
-                <Button>Save Changes</Button>
-              </Group>
-            </Stack>
-          </Card>
-        </Tabs.Panel>
+        <ApprovalLimitsSettings />
       </Tabs>
 
       <AddCategoryModal

@@ -1,9 +1,21 @@
-import { nonTangibleCategories } from "@/lib/utils/constants";
+import { fetchCategories } from "@/lib/redux/features/products/categories/categoriesSlice";
+import { fetchServiceCategories } from "@/lib/redux/features/services/categories/serviceCategoriesSlice";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { Grid, Paper, Select, Tabs, TextInput } from "@mantine/core";
 import { IconSearch } from "@tabler/icons-react";
-import React from "react";
+import React, { useEffect } from "react";
 
 const ServicesFilters = () => {
+  const dispatch = useAppDispatch();
+  const { categories } = useAppSelector((state) => state.product_categories);
+  const { categories: serviceCategories } = useAppSelector(
+    (state) => state.service_categories,
+  );
+
+  useEffect(() => {
+    dispatch(fetchCategories(1));
+    dispatch(fetchServiceCategories(1));
+  }, [dispatch]);
   return (
     <Tabs.Panel value="services" pt="md">
       <Paper p="md" withBorder>
@@ -18,7 +30,10 @@ const ServicesFilters = () => {
           <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
             <Select
               placeholder="All Categories"
-              data={nonTangibleCategories}
+              data={categories.concat(serviceCategories).map((cat) => ({
+                value: cat.id.toString(),
+                label: cat.name,
+              }))}
               size="md"
             />
           </Grid.Col>

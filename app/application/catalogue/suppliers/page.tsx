@@ -1,13 +1,11 @@
 "use client";
 
 import { ContentContainer } from "@/components/layout/content-container";
+import { fetchCategories } from "@/lib/redux/features/products/categories/categoriesSlice";
 import { getProducts } from "@/lib/redux/features/products/productsSlice";
+import { fetchServiceCategories } from "@/lib/redux/features/services/categories/serviceCategoriesSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import {
-  catalogueCategories,
-  nonTangibleCatalogueItems,
-  nonTangibleCategories,
-} from "@/lib/utils/constants";
+import { nonTangibleCatalogueItems } from "@/lib/utils/constants";
 import {
   TextInput,
   Select,
@@ -49,15 +47,21 @@ export default function SuppliersCatalogPage() {
   const dispatch = useAppDispatch();
 
   const { products } = useAppSelector((state) => state.products);
+  const { categories } = useAppSelector((state) => state.product_categories);
+  const { categories: serviceCategories } = useAppSelector(
+    (state) => state.service_categories,
+  );
 
   useEffect(() => {
     dispatch(getProducts({ page: 1 }));
+    dispatch(fetchCategories(1));
+    dispatch(fetchServiceCategories(1));
   }, [dispatch]);
 
   const currentItems =
     activeTab === "inventory" ? products : nonTangibleCatalogueItems;
   const currentCategories =
-    activeTab === "inventory" ? catalogueCategories : nonTangibleCategories;
+    activeTab === "inventory" ? categories : serviceCategories;
 
   return (
     <ContentContainer>
@@ -96,7 +100,9 @@ export default function SuppliersCatalogPage() {
                 <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
                   <Select
                     placeholder="All Categories"
-                    data={catalogueCategories}
+                    data={categories
+                      .concat(serviceCategories)
+                      .map((cat) => (typeof cat === "string" ? cat : cat.name))}
                     size="md"
                   />
                 </Grid.Col>
@@ -131,7 +137,9 @@ export default function SuppliersCatalogPage() {
                 <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
                   <Select
                     placeholder="All Categories"
-                    data={nonTangibleCategories}
+                    data={categories
+                      .concat(serviceCategories)
+                      .map((cat) => (typeof cat === "string" ? cat : cat.name))}
                     size="md"
                   />
                 </Grid.Col>
@@ -189,7 +197,11 @@ export default function SuppliersCatalogPage() {
                   </Accordion.Control>
                   <Accordion.Panel>
                     <MultiSelect
-                      data={currentCategories.slice(1)}
+                      data={currentCategories
+                        .slice(1)
+                        .map((cat) =>
+                          typeof cat === "string" ? cat : cat.name,
+                        )}
                       placeholder="Select categories"
                       searchable
                       clearable
@@ -335,13 +347,6 @@ export default function SuppliersCatalogPage() {
                               <IconHeart size={18} />
                             </ActionIcon>
                           </Group>
-                          <Badge
-                            size="sm"
-                            variant="light"
-                            color={item.inStock ? "green" : "red"}
-                          >
-                            {item.inStock ? "Available" : "Out of Stock"}
-                          </Badge>
                           <Text size="xs" c="dimmed" lineClamp={2}>
                             {item.description}
                           </Text>

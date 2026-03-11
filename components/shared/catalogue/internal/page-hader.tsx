@@ -40,7 +40,7 @@ const InternalCatalogPageHeader = () => {
             component="a"
             href="/application/catalogue/internal/new?type=service"
           >
-            Non-Tangible Service
+            Service
           </Menu.Item>
         </Menu.Dropdown>
       </Menu>
