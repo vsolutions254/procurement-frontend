@@ -1,19 +1,18 @@
 import CategoriesTable from "@/components/shared/catalogue/products/categories-table";
-import ServiceCategoriesTable from "@/components/shared/catalogue/services/categories-table";
+import ServiceCategoriesTable from "@/components/shared/catalogue/services/categories/categories-table";
 import { Category } from "@/types/category";
-import { Badge, Button, Card, Group, Table, Tabs, Title } from "@mantine/core";
-import { IconPlus } from "@tabler/icons-react";
+import { Tabs } from "@mantine/core";
 import React from "react";
 
 interface CategoriesSettingsProps {
-  setCategoryType: (type: "goods" | "services") => void;
-  setCategoryModalOpen: (open: boolean) => void;
+  setGoodsModalOpen: (open: boolean) => void;
+  setServiceModalOpen: (open: boolean) => void;
   handleDeleteCategory: (category: Category) => void;
 }
 
 const CategoriesSettings = ({
-  setCategoryType,
-  setCategoryModalOpen,
+  setGoodsModalOpen,
+  setServiceModalOpen,
   handleDeleteCategory,
 }: CategoriesSettingsProps) => {
   return (
@@ -26,16 +25,14 @@ const CategoriesSettings = ({
 
         <Tabs.Panel value="goods" pt="md">
           <CategoriesTable
-            setCategoryType={setCategoryType}
-            setCategoryModalOpen={setCategoryModalOpen}
-            handleDeleteCategory={(category) => handleDeleteCategory(category)}
+            setCategoryModalOpen={setGoodsModalOpen}
+            handleDeleteCategory={handleDeleteCategory}
           />
         </Tabs.Panel>
 
-        <ServiceCategoriesTable
-          setCategoryType={setCategoryType}
-          setCategoryModalOpen={setCategoryModalOpen}
-        />
+        <Tabs.Panel value="services" pt="md">
+          <ServiceCategoriesTable setCategoryModalOpen={setServiceModalOpen} />
+        </Tabs.Panel>
       </Tabs>
     </Tabs.Panel>
   );

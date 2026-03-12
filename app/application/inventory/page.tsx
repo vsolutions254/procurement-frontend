@@ -2,7 +2,6 @@
 
 import { getProducts } from "@/lib/redux/features/products/productsSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { nonTangibleCatalogueItems } from "@/lib/utils/constants";
 import {
   Card,
   Text,
@@ -45,6 +44,7 @@ export default function InventoryPage() {
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const dispatch = useAppDispatch();
   const { products } = useAppSelector((state) => state.products);
+  const { services } = useAppSelector((state) => state.services);
 
   useEffect(() => {
     dispatch(getProducts({ page: 1 }));
@@ -235,7 +235,7 @@ export default function InventoryPage() {
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
-                {nonTangibleCatalogueItems.map((service) => (
+                {services.map((service) => (
                   <Table.Tr key={service.id}>
                     <Table.Td>
                       <Text size="sm" fw={600}>
@@ -251,20 +251,14 @@ export default function InventoryPage() {
                       </Badge>
                     </Table.Td>
                     <Table.Td>
-                      <Text size="sm">{service.supplier}</Text>
-                    </Table.Td>
-                    <Table.Td>
-                      <Text size="sm" fw={600}>
-                        {service.price}
+                      <Text size="sm">
+                        {service.sellable.suppliers[0].name}
                       </Text>
                     </Table.Td>
                     <Table.Td>
-                      <Badge
-                        variant="light"
-                        color={service.inStock ? "green" : "red"}
-                      >
-                        {service.inStock ? "Available" : "Unavailable"}
-                      </Badge>
+                      <Text size="sm" fw={600}>
+                        {service.base_price}
+                      </Text>
                     </Table.Td>
                     <Table.Td>
                       <ActionIcon variant="subtle" color="blue">

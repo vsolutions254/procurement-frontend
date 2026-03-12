@@ -20,14 +20,14 @@ import {
   Tabs,
   Loader,
 } from "@mantine/core";
-import { RichTextEditor } from '@mantine/tiptap';
-import { useEditor } from '@tiptap/react';
-import Highlight from '@tiptap/extension-highlight';
-import StarterKit from '@tiptap/starter-kit';
-import Underline from '@tiptap/extension-underline';
-import TextAlign from '@tiptap/extension-text-align';
-import Superscript from '@tiptap/extension-superscript';
-import SubScript from '@tiptap/extension-subscript';
+import { RichTextEditor } from "@mantine/tiptap";
+import { useEditor } from "@tiptap/react";
+import Highlight from "@tiptap/extension-highlight";
+import StarterKit from "@tiptap/starter-kit";
+import Underline from "@tiptap/extension-underline";
+import TextAlign from "@tiptap/extension-text-align";
+import Superscript from "@tiptap/extension-superscript";
+import SubScript from "@tiptap/extension-subscript";
 import {
   IconArrowLeft,
   IconDeviceFloppy,
@@ -41,7 +41,7 @@ import { useState } from "react";
 
 export default function NewCatalogueItem() {
   const router = useRouter();
-  const [itemType, setItemType] = useState<string | null>('inventory');
+  const [itemType, setItemType] = useState<string | null>("inventory");
   const [formData, setFormData] = useState({
     name: "",
     category: "",
@@ -49,7 +49,7 @@ export default function NewCatalogueItem() {
     price: 0,
     description: "",
     specifications: "",
-    serviceTerms: "",
+    service_terms: "",
     taxStatus: "taxable",
     taxType: "inclusive",
     taxMethod: "percentage",
@@ -63,12 +63,12 @@ export default function NewCatalogueItem() {
       Superscript,
       SubScript,
       Highlight,
-      TextAlign.configure({ types: ['heading', 'paragraph'] }),
+      TextAlign.configure({ types: ["heading", "paragraph"] }),
     ],
-    content: formData.specifications || '<p></p>',
+    content: formData.specifications || "<p></p>",
     immediatelyRender: false,
     onUpdate: ({ editor }) => {
-      setFormData(prev => ({ ...prev, specifications: editor.getHTML() }));
+      setFormData((prev) => ({ ...prev, specifications: editor.getHTML() }));
     },
   });
 
@@ -79,12 +79,12 @@ export default function NewCatalogueItem() {
       Superscript,
       SubScript,
       Highlight,
-      TextAlign.configure({ types: ['heading', 'paragraph'] }),
+      TextAlign.configure({ types: ["heading", "paragraph"] }),
     ],
-    content: formData.serviceTerms || '<p></p>',
+    content: formData.service_terms || "<p></p>",
     immediatelyRender: false,
     onUpdate: ({ editor }) => {
-      setFormData(prev => ({ ...prev, serviceTerms: editor.getHTML() }));
+      setFormData((prev) => ({ ...prev, service_terms: editor.getHTML() }));
     },
   });
 
@@ -95,12 +95,12 @@ export default function NewCatalogueItem() {
       Superscript,
       SubScript,
       Highlight,
-      TextAlign.configure({ types: ['heading', 'paragraph'] }),
+      TextAlign.configure({ types: ["heading", "paragraph"] }),
     ],
-    content: formData.specifications || '<p></p>',
+    content: formData.specifications || "<p></p>",
     immediatelyRender: false,
     onUpdate: ({ editor }) => {
-      setFormData(prev => ({ ...prev, specifications: editor.getHTML() }));
+      setFormData((prev) => ({ ...prev, specifications: editor.getHTML() }));
     },
   });
 
@@ -231,7 +231,10 @@ export default function NewCatalogueItem() {
                             ]}
                             value={formData.category}
                             onChange={(value) =>
-                              setFormData({ ...formData, category: value || "" })
+                              setFormData({
+                                ...formData,
+                                category: value || "",
+                              })
                             }
                             required
                           />
@@ -259,7 +262,10 @@ export default function NewCatalogueItem() {
                         placeholder="Detailed description of the item..."
                         value={formData.description}
                         onChange={(e) =>
-                          setFormData({ ...formData, description: e.target.value })
+                          setFormData({
+                            ...formData,
+                            description: e.target.value,
+                          })
                         }
                         rows={4}
                         required
@@ -271,7 +277,9 @@ export default function NewCatalogueItem() {
                         {!editor ? (
                           <Group justify="center" p="xl">
                             <Loader size="sm" />
-                            <Text size="sm" c="dimmed">Loading editor...</Text>
+                            <Text size="sm" c="dimmed">
+                              Loading editor...
+                            </Text>
                           </Group>
                         ) : (
                           <RichTextEditor editor={editor}>
@@ -316,7 +324,11 @@ export default function NewCatalogueItem() {
 
                               <RichTextEditor.ControlsGroup>
                                 <RichTextEditor.Control
-                                  onClick={() => document.getElementById('attachment-input')?.click()}
+                                  onClick={() =>
+                                    document
+                                      .getElementById("attachment-input")
+                                      ?.click()
+                                  }
                                   aria-label="Insert attachment"
                                   title="Insert attachment"
                                 >
@@ -325,17 +337,19 @@ export default function NewCatalogueItem() {
                               </RichTextEditor.ControlsGroup>
                             </RichTextEditor.Toolbar>
 
-                            <RichTextEditor.Content style={{ minHeight: '200px' }} />
+                            <RichTextEditor.Content
+                              style={{ minHeight: "200px" }}
+                            />
                           </RichTextEditor>
                         )}
                         <FileInput
                           id="attachment-input"
-                          style={{ display: 'none' }}
+                          style={{ display: "none" }}
                           multiple
                           onChange={(files) => {
                             if (files) {
                               setAttachments([...attachments, ...files]);
-                              files.forEach(file => {
+                              files.forEach((file) => {
                                 const link = `<p><a href="#" data-file="${file.name}">${file.name}</a> (${(file.size / 1024).toFixed(1)} KB)</p>`;
                                 editor?.commands.insertContent(link);
                               });
@@ -343,17 +357,25 @@ export default function NewCatalogueItem() {
                           }}
                         />
                         {attachments.length > 0 && (
-                          <div style={{ marginTop: '8px' }}>
-                            <Text size="xs" c="dimmed">Attachments ({attachments.length}):</Text>
+                          <div style={{ marginTop: "8px" }}>
+                            <Text size="xs" c="dimmed">
+                              Attachments ({attachments.length}):
+                            </Text>
                             {attachments.map((file, index) => (
                               <Group key={index} gap="xs" mt="xs">
                                 <Text size="xs">{file.name}</Text>
-                                <Text size="xs" c="dimmed">({(file.size / 1024).toFixed(1)} KB)</Text>
+                                <Text size="xs" c="dimmed">
+                                  ({(file.size / 1024).toFixed(1)} KB)
+                                </Text>
                                 <ActionIcon
                                   size="xs"
                                   color="red"
                                   variant="subtle"
-                                  onClick={() => setAttachments(attachments.filter((_, i) => i !== index))}
+                                  onClick={() =>
+                                    setAttachments(
+                                      attachments.filter((_, i) => i !== index),
+                                    )
+                                  }
                                 >
                                   <IconX size={12} />
                                 </ActionIcon>
@@ -400,19 +422,25 @@ export default function NewCatalogueItem() {
                                   <Text size="sm" c="dimmed">
                                     Contact:
                                   </Text>
-                                  <Text size="sm">{supplier.details.contact}</Text>
+                                  <Text size="sm">
+                                    {supplier.details.contact}
+                                  </Text>
                                 </Group>
                                 <Group justify="space-between">
                                   <Text size="sm" c="dimmed">
                                     Email:
                                   </Text>
-                                  <Text size="sm">{supplier.details.email}</Text>
+                                  <Text size="sm">
+                                    {supplier.details.email}
+                                  </Text>
                                 </Group>
                                 <Group justify="space-between">
                                   <Text size="sm" c="dimmed">
                                     Location:
                                   </Text>
-                                  <Text size="sm">{supplier.details.location}</Text>
+                                  <Text size="sm">
+                                    {supplier.details.location}
+                                  </Text>
                                 </Group>
                                 <Group justify="space-between">
                                   <Text size="sm" c="dimmed">
@@ -553,13 +581,19 @@ export default function NewCatalogueItem() {
                             }
                             min={0}
                             max={
-                              formData.taxMethod === "percentage" ? 100 : undefined
+                              formData.taxMethod === "percentage"
+                                ? 100
+                                : undefined
                             }
                             suffix={
-                              formData.taxMethod === "percentage" ? "%" : undefined
+                              formData.taxMethod === "percentage"
+                                ? "%"
+                                : undefined
                             }
                             prefix={
-                              formData.taxMethod === "amount" ? "KES " : undefined
+                              formData.taxMethod === "amount"
+                                ? "KES "
+                                : undefined
                             }
                             thousandSeparator={
                               formData.taxMethod === "amount" ? "," : undefined
@@ -568,7 +602,11 @@ export default function NewCatalogueItem() {
                         </>
                       )}
                       {formData.taxStatus === "exempt" && (
-                        <Text size="sm" c="dimmed" style={{ fontStyle: "italic" }}>
+                        <Text
+                          size="sm"
+                          c="dimmed"
+                          style={{ fontStyle: "italic" }}
+                        >
                           This item is exempt from tax calculations.
                         </Text>
                       )}
@@ -605,10 +643,21 @@ export default function NewCatalogueItem() {
                           <Select
                             label="Category"
                             placeholder="Select category"
-                            data={['Travel', 'Flight', 'Hotel', 'Car Rental', 'Professional Services', 'Consulting', 'Training']}
+                            data={[
+                              "Travel",
+                              "Flight",
+                              "Hotel",
+                              "Car Rental",
+                              "Professional Services",
+                              "Consulting",
+                              "Training",
+                            ]}
                             value={formData.category}
                             onChange={(value) =>
-                              setFormData({ ...formData, category: value || "" })
+                              setFormData({
+                                ...formData,
+                                category: value || "",
+                              })
                             }
                             required
                           />
@@ -636,7 +685,10 @@ export default function NewCatalogueItem() {
                         placeholder="Detailed description of the service offered..."
                         value={formData.description}
                         onChange={(e) =>
-                          setFormData({ ...formData, description: e.target.value })
+                          setFormData({
+                            ...formData,
+                            description: e.target.value,
+                          })
                         }
                         rows={4}
                         required
@@ -648,7 +700,9 @@ export default function NewCatalogueItem() {
                         {!serviceTermsEditor ? (
                           <Group justify="center" p="xl">
                             <Loader size="sm" />
-                            <Text size="sm" c="dimmed">Loading editor...</Text>
+                            <Text size="sm" c="dimmed">
+                              Loading editor...
+                            </Text>
                           </Group>
                         ) : (
                           <RichTextEditor editor={serviceTermsEditor}>
@@ -693,7 +747,13 @@ export default function NewCatalogueItem() {
 
                               <RichTextEditor.ControlsGroup>
                                 <RichTextEditor.Control
-                                  onClick={() => document.getElementById('service-attachment-input')?.click()}
+                                  onClick={() =>
+                                    document
+                                      .getElementById(
+                                        "service-attachment-input",
+                                      )
+                                      ?.click()
+                                  }
                                   aria-label="Insert attachment"
                                   title="Insert attachment"
                                 >
@@ -702,35 +762,52 @@ export default function NewCatalogueItem() {
                               </RichTextEditor.ControlsGroup>
                             </RichTextEditor.Toolbar>
 
-                            <RichTextEditor.Content style={{ minHeight: '150px' }} />
+                            <RichTextEditor.Content
+                              style={{ minHeight: "150px" }}
+                            />
                           </RichTextEditor>
                         )}
                         <FileInput
                           id="service-attachment-input"
-                          style={{ display: 'none' }}
+                          style={{ display: "none" }}
                           multiple
                           onChange={(files) => {
                             if (files) {
-                              setServiceAttachments([...serviceAttachments, ...files]);
-                              files.forEach(file => {
+                              setServiceAttachments([
+                                ...serviceAttachments,
+                                ...files,
+                              ]);
+                              files.forEach((file) => {
                                 const link = `<p><a href="#" data-file="${file.name}">${file.name}</a> (${(file.size / 1024).toFixed(1)} KB)</p>`;
-                                serviceTermsEditor?.commands.insertContent(link);
+                                serviceTermsEditor?.commands.insertContent(
+                                  link,
+                                );
                               });
                             }
                           }}
                         />
                         {serviceAttachments.length > 0 && (
-                          <div style={{ marginTop: '8px' }}>
-                            <Text size="xs" c="dimmed">Attachments ({serviceAttachments.length}):</Text>
+                          <div style={{ marginTop: "8px" }}>
+                            <Text size="xs" c="dimmed">
+                              Attachments ({serviceAttachments.length}):
+                            </Text>
                             {serviceAttachments.map((file, index) => (
                               <Group key={index} gap="xs" mt="xs">
                                 <Text size="xs">{file.name}</Text>
-                                <Text size="xs" c="dimmed">({(file.size / 1024).toFixed(1)} KB)</Text>
+                                <Text size="xs" c="dimmed">
+                                  ({(file.size / 1024).toFixed(1)} KB)
+                                </Text>
                                 <ActionIcon
                                   size="xs"
                                   color="red"
                                   variant="subtle"
-                                  onClick={() => setServiceAttachments(serviceAttachments.filter((_, i) => i !== index))}
+                                  onClick={() =>
+                                    setServiceAttachments(
+                                      serviceAttachments.filter(
+                                        (_, i) => i !== index,
+                                      ),
+                                    )
+                                  }
                                 >
                                   <IconX size={12} />
                                 </ActionIcon>
@@ -746,7 +823,9 @@ export default function NewCatalogueItem() {
                         {!serviceSpecsEditor ? (
                           <Group justify="center" p="xl">
                             <Loader size="sm" />
-                            <Text size="sm" c="dimmed">Loading editor...</Text>
+                            <Text size="sm" c="dimmed">
+                              Loading editor...
+                            </Text>
                           </Group>
                         ) : (
                           <RichTextEditor editor={serviceSpecsEditor}>
@@ -791,7 +870,11 @@ export default function NewCatalogueItem() {
 
                               <RichTextEditor.ControlsGroup>
                                 <RichTextEditor.Control
-                                  onClick={() => document.getElementById('specs-attachment-input')?.click()}
+                                  onClick={() =>
+                                    document
+                                      .getElementById("specs-attachment-input")
+                                      ?.click()
+                                  }
                                   aria-label="Insert attachment"
                                   title="Insert attachment"
                                 >
@@ -800,35 +883,52 @@ export default function NewCatalogueItem() {
                               </RichTextEditor.ControlsGroup>
                             </RichTextEditor.Toolbar>
 
-                            <RichTextEditor.Content style={{ minHeight: '150px' }} />
+                            <RichTextEditor.Content
+                              style={{ minHeight: "150px" }}
+                            />
                           </RichTextEditor>
                         )}
                         <FileInput
                           id="specs-attachment-input"
-                          style={{ display: 'none' }}
+                          style={{ display: "none" }}
                           multiple
                           onChange={(files) => {
                             if (files) {
-                              setSpecsAttachments([...specsAttachments, ...files]);
-                              files.forEach(file => {
+                              setSpecsAttachments([
+                                ...specsAttachments,
+                                ...files,
+                              ]);
+                              files.forEach((file) => {
                                 const link = `<p><a href="#" data-file="${file.name}">${file.name}</a> (${(file.size / 1024).toFixed(1)} KB)</p>`;
-                                serviceSpecsEditor?.commands.insertContent(link);
+                                serviceSpecsEditor?.commands.insertContent(
+                                  link,
+                                );
                               });
                             }
                           }}
                         />
                         {specsAttachments.length > 0 && (
-                          <div style={{ marginTop: '8px' }}>
-                            <Text size="xs" c="dimmed">Attachments ({specsAttachments.length}):</Text>
+                          <div style={{ marginTop: "8px" }}>
+                            <Text size="xs" c="dimmed">
+                              Attachments ({specsAttachments.length}):
+                            </Text>
                             {specsAttachments.map((file, index) => (
                               <Group key={index} gap="xs" mt="xs">
                                 <Text size="xs">{file.name}</Text>
-                                <Text size="xs" c="dimmed">({(file.size / 1024).toFixed(1)} KB)</Text>
+                                <Text size="xs" c="dimmed">
+                                  ({(file.size / 1024).toFixed(1)} KB)
+                                </Text>
                                 <ActionIcon
                                   size="xs"
                                   color="red"
                                   variant="subtle"
-                                  onClick={() => setSpecsAttachments(specsAttachments.filter((_, i) => i !== index))}
+                                  onClick={() =>
+                                    setSpecsAttachments(
+                                      specsAttachments.filter(
+                                        (_, i) => i !== index,
+                                      ),
+                                    )
+                                  }
                                 >
                                   <IconX size={12} />
                                 </ActionIcon>
@@ -837,73 +937,130 @@ export default function NewCatalogueItem() {
                           </div>
                         )}
                       </div>
-                      
+
                       {/* Category-specific fields for services */}
-                      {formData.category === 'Travel' && (
+                      {formData.category === "Travel" && (
                         <Grid gutter="md">
-                          <Grid.Col span={12}><Text size="sm" fw={500} c="blue">Travel Details</Text></Grid.Col>
-                          <Grid.Col span={6}>
-                            <Select label="Travel Type" data={['Domestic', 'International', 'Multi-city']} />
+                          <Grid.Col span={12}>
+                            <Text size="sm" fw={500} c="blue">
+                              Travel Details
+                            </Text>
                           </Grid.Col>
                           <Grid.Col span={6}>
-                            <TextInput label="Destination" placeholder="City, Country" />
+                            <Select
+                              label="Travel Type"
+                              data={["Domestic", "International", "Multi-city"]}
+                            />
+                          </Grid.Col>
+                          <Grid.Col span={6}>
+                            <TextInput
+                              label="Destination"
+                              placeholder="City, Country"
+                            />
                           </Grid.Col>
                           <Grid.Col span={6}>
                             <TextInput label="Travel Date" type="date" />
                           </Grid.Col>
                           <Grid.Col span={6}>
-                            <NumberInput label="Number of Travelers" min={1} max={20} defaultValue={1} />
+                            <NumberInput
+                              label="Number of Travelers"
+                              min={1}
+                              max={20}
+                              defaultValue={1}
+                            />
                           </Grid.Col>
                           <Grid.Col span={12}>
-                            <Textarea label="Travel Purpose" placeholder="Business meeting, conference, training, etc." rows={2} />
+                            <Textarea
+                              label="Travel Purpose"
+                              placeholder="Business meeting, conference, training, etc."
+                              rows={2}
+                            />
                           </Grid.Col>
                         </Grid>
                       )}
-                      
-                      {formData.category === 'Flight' && (
+
+                      {formData.category === "Flight" && (
                         <Grid gutter="md">
-                          <Grid.Col span={12}><Text size="sm" fw={500} c="blue">Flight Details</Text></Grid.Col>
-                          <Grid.Col span={6}>
-                            <TextInput label="From" placeholder="Departure city" />
+                          <Grid.Col span={12}>
+                            <Text size="sm" fw={500} c="blue">
+                              Flight Details
+                            </Text>
                           </Grid.Col>
                           <Grid.Col span={6}>
-                            <TextInput label="To" placeholder="Destination city" />
+                            <TextInput
+                              label="From"
+                              placeholder="Departure city"
+                            />
+                          </Grid.Col>
+                          <Grid.Col span={6}>
+                            <TextInput
+                              label="To"
+                              placeholder="Destination city"
+                            />
                           </Grid.Col>
                           <Grid.Col span={6}>
                             <TextInput label="Departure Date" type="date" />
                           </Grid.Col>
                           <Grid.Col span={6}>
-                            <Select label="Class" data={['Economy', 'Business', 'First']} />
+                            <Select
+                              label="Class"
+                              data={["Economy", "Business", "First"]}
+                            />
                           </Grid.Col>
                         </Grid>
                       )}
-                      
-                      {formData.category === 'Hotel' && (
+
+                      {formData.category === "Hotel" && (
                         <Grid gutter="md">
-                          <Grid.Col span={12}><Text size="sm" fw={500} c="blue">Hotel Details</Text></Grid.Col>
-                          <Grid.Col span={6}>
-                            <TextInput label="Location" placeholder="City, Country" />
+                          <Grid.Col span={12}>
+                            <Text size="sm" fw={500} c="blue">
+                              Hotel Details
+                            </Text>
                           </Grid.Col>
                           <Grid.Col span={6}>
-                            <Select label="Room Type" data={['Standard', 'Deluxe', 'Suite']} />
+                            <TextInput
+                              label="Location"
+                              placeholder="City, Country"
+                            />
+                          </Grid.Col>
+                          <Grid.Col span={6}>
+                            <Select
+                              label="Room Type"
+                              data={["Standard", "Deluxe", "Suite"]}
+                            />
                           </Grid.Col>
                           <Grid.Col span={6}>
                             <TextInput label="Check-in Date" type="date" />
                           </Grid.Col>
                           <Grid.Col span={6}>
-                            <NumberInput label="Guests" min={1} max={8} defaultValue={2} />
+                            <NumberInput
+                              label="Guests"
+                              min={1}
+                              max={8}
+                              defaultValue={2}
+                            />
                           </Grid.Col>
                         </Grid>
                       )}
-                      
-                      {formData.category === 'Car Rental' && (
+
+                      {formData.category === "Car Rental" && (
                         <Grid gutter="md">
-                          <Grid.Col span={12}><Text size="sm" fw={500} c="blue">Car Rental Details</Text></Grid.Col>
-                          <Grid.Col span={6}>
-                            <Select label="Car Type" data={['Economy', 'Mid-size', 'SUV', 'Luxury']} />
+                          <Grid.Col span={12}>
+                            <Text size="sm" fw={500} c="blue">
+                              Car Rental Details
+                            </Text>
                           </Grid.Col>
                           <Grid.Col span={6}>
-                            <TextInput label="Pickup Location" placeholder="Address" />
+                            <Select
+                              label="Car Type"
+                              data={["Economy", "Mid-size", "SUV", "Luxury"]}
+                            />
+                          </Grid.Col>
+                          <Grid.Col span={6}>
+                            <TextInput
+                              label="Pickup Location"
+                              placeholder="Address"
+                            />
                           </Grid.Col>
                           <Grid.Col span={6}>
                             <TextInput label="Pickup Date" type="date" />
@@ -913,15 +1070,31 @@ export default function NewCatalogueItem() {
                           </Grid.Col>
                         </Grid>
                       )}
-                      
-                      {formData.category === 'Professional Services' && (
+
+                      {formData.category === "Professional Services" && (
                         <Grid gutter="md">
-                          <Grid.Col span={12}><Text size="sm" fw={500} c="blue">Service Details</Text></Grid.Col>
-                          <Grid.Col span={6}>
-                            <Select label="Service Type" data={['Legal', 'Accounting', 'IT Support', 'Marketing', 'Design']} />
+                          <Grid.Col span={12}>
+                            <Text size="sm" fw={500} c="blue">
+                              Service Details
+                            </Text>
                           </Grid.Col>
                           <Grid.Col span={6}>
-                            <TextInput label="Project Duration" placeholder="e.g., 2 weeks" />
+                            <Select
+                              label="Service Type"
+                              data={[
+                                "Legal",
+                                "Accounting",
+                                "IT Support",
+                                "Marketing",
+                                "Design",
+                              ]}
+                            />
+                          </Grid.Col>
+                          <Grid.Col span={6}>
+                            <TextInput
+                              label="Project Duration"
+                              placeholder="e.g., 2 weeks"
+                            />
                           </Grid.Col>
                           <Grid.Col span={6}>
                             <TextInput label="Start Date" type="date" />
@@ -930,55 +1103,111 @@ export default function NewCatalogueItem() {
                             <TextInput label="End Date" type="date" />
                           </Grid.Col>
                           <Grid.Col span={12}>
-                            <Textarea label="Scope of Work" placeholder="Detailed description of work to be performed" rows={3} />
+                            <Textarea
+                              label="Scope of Work"
+                              placeholder="Detailed description of work to be performed"
+                              rows={3}
+                            />
                           </Grid.Col>
                         </Grid>
                       )}
-                      
-                      {formData.category === 'Consulting' && (
+
+                      {formData.category === "Consulting" && (
                         <Grid gutter="md">
-                          <Grid.Col span={12}><Text size="sm" fw={500} c="blue">Consulting Details</Text></Grid.Col>
-                          <Grid.Col span={6}>
-                            <Select label="Consulting Area" data={['Business Strategy', 'HR', 'Finance', 'Operations', 'Technology']} />
+                          <Grid.Col span={12}>
+                            <Text size="sm" fw={500} c="blue">
+                              Consulting Details
+                            </Text>
                           </Grid.Col>
                           <Grid.Col span={6}>
-                            <NumberInput label="Estimated Hours" min={1} placeholder="Total hours" />
+                            <Select
+                              label="Consulting Area"
+                              data={[
+                                "Business Strategy",
+                                "HR",
+                                "Finance",
+                                "Operations",
+                                "Technology",
+                              ]}
+                            />
                           </Grid.Col>
                           <Grid.Col span={6}>
-                            <Select label="Delivery Mode" data={['On-site', 'Remote', 'Hybrid']} />
+                            <NumberInput
+                              label="Estimated Hours"
+                              min={1}
+                              placeholder="Total hours"
+                            />
                           </Grid.Col>
                           <Grid.Col span={6}>
-                            <TextInput label="Project Timeline" placeholder="e.g., 3 months" />
+                            <Select
+                              label="Delivery Mode"
+                              data={["On-site", "Remote", "Hybrid"]}
+                            />
+                          </Grid.Col>
+                          <Grid.Col span={6}>
+                            <TextInput
+                              label="Project Timeline"
+                              placeholder="e.g., 3 months"
+                            />
                           </Grid.Col>
                           <Grid.Col span={12}>
-                            <Textarea label="Expected Deliverables" placeholder="Reports, presentations, recommendations, etc." rows={3} />
+                            <Textarea
+                              label="Expected Deliverables"
+                              placeholder="Reports, presentations, recommendations, etc."
+                              rows={3}
+                            />
                           </Grid.Col>
                         </Grid>
                       )}
-                      
-                      {formData.category === 'Training' && (
+
+                      {formData.category === "Training" && (
                         <Grid gutter="md">
-                          <Grid.Col span={12}><Text size="sm" fw={500} c="blue">Training Details</Text></Grid.Col>
-                          <Grid.Col span={6}>
-                            <TextInput label="Training Topic" placeholder="Subject matter" />
+                          <Grid.Col span={12}>
+                            <Text size="sm" fw={500} c="blue">
+                              Training Details
+                            </Text>
                           </Grid.Col>
                           <Grid.Col span={6}>
-                            <NumberInput label="Number of Participants" min={1} max={100} />
+                            <TextInput
+                              label="Training Topic"
+                              placeholder="Subject matter"
+                            />
+                          </Grid.Col>
+                          <Grid.Col span={6}>
+                            <NumberInput
+                              label="Number of Participants"
+                              min={1}
+                              max={100}
+                            />
                           </Grid.Col>
                           <Grid.Col span={6}>
                             <TextInput label="Training Date" type="date" />
                           </Grid.Col>
                           <Grid.Col span={6}>
-                            <NumberInput label="Duration (Hours)" min={1} max={40} />
+                            <NumberInput
+                              label="Duration (Hours)"
+                              min={1}
+                              max={40}
+                            />
                           </Grid.Col>
                           <Grid.Col span={6}>
-                            <Select label="Training Format" data={['In-person', 'Virtual', 'Hybrid']} />
+                            <Select
+                              label="Training Format"
+                              data={["In-person", "Virtual", "Hybrid"]}
+                            />
                           </Grid.Col>
                           <Grid.Col span={6}>
-                            <TextInput label="Venue" placeholder="Training location" />
+                            <TextInput
+                              label="Venue"
+                              placeholder="Training location"
+                            />
                           </Grid.Col>
                           <Grid.Col span={12}>
-                            <Textarea label="Learning Objectives" placeholder="What participants will learn" rows={3} />
+                            <Textarea
+                              label="Learning Objectives"
+                              placeholder="What participants will learn"
+                              rows={3}
+                            />
                           </Grid.Col>
                         </Grid>
                       )}

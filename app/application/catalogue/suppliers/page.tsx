@@ -5,7 +5,6 @@ import { fetchCategories } from "@/lib/redux/features/products/categories/catego
 import { getProducts } from "@/lib/redux/features/products/productsSlice";
 import { fetchServiceCategories } from "@/lib/redux/features/services/categories/serviceCategoriesSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { nonTangibleCatalogueItems } from "@/lib/utils/constants";
 import {
   TextInput,
   Select,
@@ -47,6 +46,7 @@ export default function SuppliersCatalogPage() {
   const dispatch = useAppDispatch();
 
   const { products } = useAppSelector((state) => state.products);
+  const { services } = useAppSelector((state) => state.services);
   const { categories } = useAppSelector((state) => state.product_categories);
   const { categories: serviceCategories } = useAppSelector(
     (state) => state.service_categories,
@@ -58,8 +58,7 @@ export default function SuppliersCatalogPage() {
     dispatch(fetchServiceCategories(1));
   }, [dispatch]);
 
-  const currentItems =
-    activeTab === "inventory" ? products : nonTangibleCatalogueItems;
+  const currentItems = activeTab === "inventory" ? products : services;
   const currentCategories =
     activeTab === "inventory" ? categories : serviceCategories;
 
@@ -83,7 +82,7 @@ export default function SuppliersCatalogPage() {
               Products ({products.length})
             </Tabs.Tab>
             <Tabs.Tab value="services" leftSection={<IconPlane size={16} />}>
-              Services ({nonTangibleCatalogueItems.length})
+              Services ({services.length})
             </Tabs.Tab>
           </Tabs.List>
 
@@ -356,18 +355,17 @@ export default function SuppliersCatalogPage() {
                                 Supplier
                               </Text>
                               <Text size="xs" fw={500}>
-                                {item.supplier}
+                                {item.suppliers[0].name}
                               </Text>
                             </div>
                             <Text size="lg" fw={700} c="cyan">
-                              {item.price}
+                              {item.base_price}
                             </Text>
                           </Group>
                           <Button
                             leftSection={<IconShoppingCart size={16} />}
                             variant="filled"
                             fullWidth
-                            disabled={!item.inStock}
                             mt="md"
                           >
                             Request Quote
@@ -411,20 +409,14 @@ export default function SuppliersCatalogPage() {
                           </Badge>
                         </Table.Td>
                         <Table.Td>
-                          <Text size="sm">{item.supplier}</Text>
-                        </Table.Td>
-                        <Table.Td>
-                          <Text size="sm" fw={600} c="cyan">
-                            {item.price}
+                          <Text size="sm">
+                            {item.suppliers[0]?.name || "N/A"}
                           </Text>
                         </Table.Td>
                         <Table.Td>
-                          <Badge
-                            variant="light"
-                            color={item.inStock ? "green" : "red"}
-                          >
-                            {item.inStock ? "Available" : "Out of Stock"}
-                          </Badge>
+                          <Text size="sm" fw={600} c="cyan">
+                            {item.base_price}
+                          </Text>
                         </Table.Td>
                         <Table.Td>
                           <Group gap="xs">
@@ -445,7 +437,6 @@ export default function SuppliersCatalogPage() {
                             <Button
                               size="xs"
                               leftSection={<IconShoppingCart size={14} />}
-                              disabled={!item.inStock}
                             >
                               Request Quote
                             </Button>

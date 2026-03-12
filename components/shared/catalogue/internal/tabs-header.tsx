@@ -1,7 +1,6 @@
 import { getProducts } from "@/lib/redux/features/products/productsSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
-  nonTangibleCatalogueItems,
   recommendedProducts,
   recommendedServices,
 } from "@/lib/utils/constants";
@@ -11,6 +10,7 @@ import { Dispatch, SetStateAction, useEffect } from "react";
 import ProductFilters from "./products-filters";
 import ServicesFilters from "./services-filters";
 import RecommendationsTab from "./recommendations";
+import { getServices } from "@/lib/redux/features/services/servicesSlice";
 
 const InternalCatalogTabsHeader = ({
   activeTab,
@@ -32,9 +32,11 @@ const InternalCatalogTabsHeader = ({
   const dispatch = useAppDispatch();
 
   const { products } = useAppSelector((state) => state.products);
+  const { services } = useAppSelector((state) => state.services);
 
   useEffect(() => {
     dispatch(getProducts({ page: 1 }));
+    dispatch(getServices({ page: 1 }));
   }, [dispatch]);
   return (
     <Tabs value={activeTab} onChange={setActiveTab}>
@@ -43,7 +45,7 @@ const InternalCatalogTabsHeader = ({
           Products ({products.length})
         </Tabs.Tab>
         <Tabs.Tab value="services" leftSection={<IconPlane size={16} />}>
-          Services ({nonTangibleCatalogueItems.length})
+          Services ({services.length})
         </Tabs.Tab>
         <Tabs.Tab value="recommendations" leftSection={<IconBulb size={16} />}>
           Recommended Items (

@@ -224,13 +224,23 @@ const CreateProductForm = ({
               </Title>
               <Stack gap="md">
                 {imagePreview && (
-                  <div style={{ position: "relative", borderRadius: "8px", overflow: "hidden" }}>
+                  <div
+                    style={{
+                      position: "relative",
+                      borderRadius: "8px",
+                      overflow: "hidden",
+                    }}
+                  >
                     <Image
                       src={imagePreview}
                       alt="Item preview"
                       width={400}
                       height={200}
-                      style={{ width: "100%", height: "200px", objectFit: "cover" }}
+                      style={{
+                        width: "100%",
+                        height: "200px",
+                        objectFit: "cover",
+                      }}
                     />
                     <ActionIcon
                       size="sm"

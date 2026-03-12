@@ -1,6 +1,6 @@
 import { Product } from "@/types/product";
 
-export type ProductsState = {
+type ProductsState = {
   products: Product[];
   productsLoading: boolean;
   productsError: string | null;

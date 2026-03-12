@@ -1,12 +1,19 @@
 import { Card, NumberInput, Select, Stack, Text, Title } from "@mantine/core";
 import { UseFormReturnType } from "@mantine/form";
-import React, { SetStateAction, Dispatch } from "react";
+import React from "react";
 
-interface TaxDetailsProps {
-  form: UseFormReturnType<CreateProductFormData>;
+type TaxFormShape = {
+  tax_status?: string;
+  tax_type?: string;
+  tax_value_type?: string;
+  tax_value?: number;
+};
+
+interface TaxDetailsProps<T extends TaxFormShape> {
+  form: UseFormReturnType<T>;
 }
 
-const TaxDetails = ({ form }: TaxDetailsProps) => {
+const TaxDetails = <T extends TaxFormShape>({ form }: TaxDetailsProps<T>) => {
   return (
     <Card shadow="sm" padding="lg" radius="md" withBorder>
       <Title order={4} mb="md">
@@ -15,8 +22,8 @@ const TaxDetails = ({ form }: TaxDetailsProps) => {
       <Stack gap="md">
         <Select
           label="Tax Status"
-          key={form.key("tax_status")}
-          {...form.getInputProps("tax_status")}
+          key={form.key("tax_status" as keyof T & string)}
+          {...form.getInputProps("tax_status" as keyof T & string)}
           data={[
             { value: "exempt", label: "Tax Exempt" },
             { value: "taxable", label: "Taxable" },
@@ -26,8 +33,8 @@ const TaxDetails = ({ form }: TaxDetailsProps) => {
           <>
             <Select
               label="Tax Type"
-              key={form.key("tax_type")}
-              {...form.getInputProps("tax_type")}
+              key={form.key("tax_type" as keyof T & string)}
+              {...form.getInputProps("tax_type" as keyof T & string)}
               data={[
                 { value: "inclusive", label: "Inclusive" },
                 { value: "exclusive", label: "Exclusive" },
@@ -35,8 +42,8 @@ const TaxDetails = ({ form }: TaxDetailsProps) => {
             />
             <Select
               label="Tax Value Type"
-              key={form.key("tax_value_type")}
-              {...form.getInputProps("tax_value_type")}
+              key={form.key("tax_value_type" as keyof T & string)}
+              {...form.getInputProps("tax_value_type" as keyof T & string)}
               data={[
                 { value: "percentage", label: "Percentage" },
                 { value: "amount", label: "Amount" },
@@ -48,8 +55,8 @@ const TaxDetails = ({ form }: TaxDetailsProps) => {
                   ? "Tax Percentage (%)"
                   : "Tax Amount"
               }
-              key={form.key("tax_value")}
-              {...form.getInputProps("tax_value")}
+              key={form.key("tax_value" as keyof T & string)}
+              {...form.getInputProps("tax_value" as keyof T & string)}
               min={0}
               max={
                 form.values.tax_value_type === "percentage" ? 100 : undefined

@@ -160,72 +160,6 @@ export const navItems = [
   { label: "Reports", icon: IconChartBar, href: "/application/reports" },
 ];
 
-export const nonTangibleCatalogueItems = [
-  {
-    id: "SRV-001",
-    name: "Flight Booking Service",
-    category: "Travel",
-    supplier: "Kenya Airways",
-    price: "From KES 15,000",
-    description: "Domestic and international flight bookings",
-    inStock: true,
-  },
-  {
-    id: "SRV-002",
-    name: "Hotel Accommodation",
-    category: "Travel",
-    supplier: "Serena Hotels",
-    price: "From KES 12,000",
-    description: "Business hotel bookings and reservations",
-    inStock: true,
-  },
-  {
-    id: "SRV-003",
-    name: "Car Rental Service",
-    category: "Transport",
-    supplier: "Avis Kenya",
-    price: "From KES 8,000",
-    description: "Vehicle rental for business trips",
-    inStock: true,
-  },
-  {
-    id: "SRV-004",
-    name: "Training & Development",
-    category: "Professional Services",
-    supplier: "Corporate Training Ltd",
-    price: "From KES 25,000",
-    description: "Employee training and development programs",
-    inStock: true,
-  },
-  {
-    id: "SRV-005",
-    name: "Digital Marketing Campaign",
-    category: "Marketing",
-    supplier: "Creative Agency Ltd",
-    price: "From KES 50,000",
-    description: "Social media and digital advertising campaigns",
-    inStock: true,
-  },
-  {
-    id: "SRV-006",
-    name: "Event Management",
-    category: "Marketing",
-    supplier: "Events Pro Kenya",
-    price: "From KES 75,000",
-    description: "Corporate event planning and management",
-    inStock: true,
-  },
-  {
-    id: "SRV-007",
-    name: "Graphic Design Services",
-    category: "Marketing",
-    supplier: "Design Studio",
-    price: "From KES 20,000",
-    description: "Branding, logos, and marketing materials design",
-    inStock: true,
-  },
-];
-
 export const currencies = [
   { value: "KES", label: "Kenyan Shilling (KES)" },
   { value: "USD", label: "US Dollar (USD)" },
@@ -1638,3 +1572,38 @@ export const recommendedServices = [
     type: "service",
   },
 ];
+
+export const FIELD_TYPE_OPTIONS: { value: CustomFieldType; label: string }[] = [
+  { value: "text", label: "Text" },
+  { value: "textarea", label: "Long Text" },
+  { value: "number", label: "Number" },
+  { value: "currency", label: "Currency" },
+  { value: "date", label: "Date" },
+  { value: "time", label: "Time" },
+  { value: "datetime", label: "Date & Time" },
+  { value: "select", label: "Dropdown" },
+  { value: "multiselect", label: "Multi-select" },
+  { value: "boolean", label: "Checkbox" },
+  { value: "richtext", label: "Rich Text" },
+];
+
+export const TYPE_BADGE_COLOR: Record<CustomFieldType, string> = {
+  text: "blue",
+  textarea: "blue",
+  number: "orange",
+  currency: "green",
+  date: "violet",
+  time: "violet",
+  datetime: "violet",
+  select: "cyan",
+  multiselect: "cyan",
+  boolean: "gray",
+  richtext: "indigo",
+};
+
+export const categoryColors: Record<string, string> = {
+  Travel: "violet",
+  Transport: "blue",
+  "Professional Services": "teal",
+  Consulting: "orange",
+};

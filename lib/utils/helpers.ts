@@ -150,3 +150,39 @@ export const getStockStatusConfig = (status: string) => {
       };
   }
 };
+
+export function objectToFormData(
+  obj: Record<string, any>,
+  form: FormData = new FormData(),
+  namespace?: string,
+): FormData {
+  Object.keys(obj).forEach((key) => {
+    const value = obj[key];
+    const formKey = namespace ? `${namespace}[${key}]` : key;
+
+    if (value === null || value === undefined) {
+      return;
+    }
+
+    if (value instanceof File) {
+      form.append(formKey, value);
+      return;
+    }
+
+    if (Array.isArray(value)) {
+      value.forEach((item, index) => {
+        objectToFormData(item, form, `${formKey}[${index}]`);
+      });
+      return;
+    }
+
+    if (typeof value === "object") {
+      objectToFormData(value, form, formKey);
+      return;
+    }
+
+    form.append(formKey, String(value));
+  });
+
+  return form;
+}

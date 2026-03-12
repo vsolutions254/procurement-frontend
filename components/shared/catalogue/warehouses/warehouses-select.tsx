@@ -11,7 +11,7 @@ interface FormData {
   base_price: number;
   description: string;
   specifications: string;
-  serviceTerms: string;
+  service_terms: string;
   tax_status: string;
   tax_type: string;
   tax_method: string;

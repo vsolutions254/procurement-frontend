@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { fetchSuppliers } from "@/lib/redux/features/suppliers/supplierSlice";
 import { addProduct } from "@/lib/redux/features/products/productsSlice";
+import { addService } from "@/lib/redux/features/services/servicesSlice";
 import { notifications } from "@mantine/notifications";
 import { fetchCategories } from "@/lib/redux/features/products/categories/categoriesSlice";
 import { useForm } from "@mantine/form";
@@ -28,7 +29,7 @@ export default function NewInternalCatalogItem() {
   const type = searchParams.get("type");
   const [itemType, setItemType] = useState<string | null>(type);
 
-  const form = useForm<CreateProductFormData>({
+  const productForm = useForm<CreateProductFormData>({
     mode: "controlled",
     initialValues: {
       product_name: "",
@@ -38,12 +39,30 @@ export default function NewInternalCatalogItem() {
       base_price: 0,
       description: "",
       specifications: "",
-      serviceTerms: "",
+      service_terms: "",
       tax_status: "taxable",
       tax_type: "inclusive",
       tax_method: "percentage",
       tax_value_type: "percentage",
       tax_value: 16,
+    },
+  });
+
+  const serviceForm = useForm<CreateServiceFormData>({
+    mode: "controlled",
+    initialValues: {
+      service_name: "",
+      description: "",
+      base_price: 0,
+      category_id: 0,
+      supplier_ids: [] as string[],
+      tax_status: "taxable",
+      tax_type: "inclusive",
+      tax_method: "percentage",
+      tax_value_type: "percentage",
+      tax_value: 16,
+      specifications: "",
+      service_terms: "",
     },
   });
 
@@ -55,10 +74,10 @@ export default function NewInternalCatalogItem() {
       Highlight,
       TextAlign.configure({ types: ["heading", "paragraph"] }),
     ],
-    content: form.values.specifications || "<p></p>",
+    content: productForm.values.specifications || "<p></p>",
     immediatelyRender: false,
     onUpdate: ({ editor }) => {
-      form.setFieldValue("specifications", editor.getHTML());
+      productForm.setFieldValue("specifications", editor.getHTML());
     },
   });
 
@@ -70,10 +89,25 @@ export default function NewInternalCatalogItem() {
       Highlight,
       TextAlign.configure({ types: ["heading", "paragraph"] }),
     ],
-    content: form.values.serviceTerms || "<p></p>",
+    content: serviceForm.values.service_terms || "<p></p>",
     immediatelyRender: false,
     onUpdate: ({ editor }) => {
-      form.setFieldValue("serviceTerms", editor.getHTML());
+      serviceForm.setFieldValue("service_terms", editor.getHTML());
+    },
+  });
+
+  const serviceSpecificationsEditor = useEditor({
+    extensions: [
+      StarterKit,
+      Superscript,
+      SubScript,
+      Highlight,
+      TextAlign.configure({ types: ["heading", "paragraph"] }),
+    ],
+    content: serviceForm.values.specifications || "<p></p>",
+    immediatelyRender: false,
+    onUpdate: ({ editor }) => {
+      serviceForm.setFieldValue("specifications", editor.getHTML());
     },
   });
 
@@ -104,12 +138,16 @@ export default function NewInternalCatalogItem() {
   const handleSubmit = async () => {
     if (isLoading) return;
 
+    const isProduct = itemType === "inventory";
+    const activeForm = isProduct ? productForm : serviceForm;
+
     setIsLoading(true);
     try {
       const submitData = new FormData();
 
-      Object.entries(form.values).forEach(([key, value]) => {
+      Object.entries(activeForm.values).forEach(([key, value]) => {
         if (Array.isArray(value)) {
+          // Append each item directly — no JSON.stringify to avoid double-encoding
           value.forEach((item, index) => {
             submitData.append(`${key}[${index}]`, item);
           });
@@ -122,19 +160,21 @@ export default function NewInternalCatalogItem() {
         }
       });
 
-      if (imageFile) {
+      if (isProduct && imageFile) {
         submitData.append("image", imageFile);
       }
 
-      await dispatch(addProduct(submitData)).unwrap();
+      await dispatch(
+        isProduct ? addProduct(submitData) : addService(submitData),
+      ).unwrap();
       notifications.show({
         title: "Success",
-        message: "Product created successfully",
+        message: `${isProduct ? "Product" : "Service"} created successfully`,
         color: "green",
       });
       router.push("/application/catalogue/internal");
     } catch (error: unknown) {
-      let errorMessage = "Failed to create product";
+      let errorMessage = `Failed to create ${isProduct ? "product" : "service"}`;
 
       const payload = error as {
         errors?: Record<string, string[]>;
@@ -156,6 +196,7 @@ export default function NewInternalCatalogItem() {
       setIsLoading(false);
     }
   };
+
   return (
     <ContentContainer>
       <Stack gap="lg">
@@ -175,7 +216,7 @@ export default function NewInternalCatalogItem() {
           </Tabs.List>
 
           <CreateProductForm
-            form={form}
+            form={productForm}
             specificationsEditor={specificationsEditor}
             setAttachments={setAttachments}
             attachments={attachments}
@@ -187,7 +228,14 @@ export default function NewInternalCatalogItem() {
             handleImageUpload={handleImageUpload}
           />
 
-          <CreateService />
+          <CreateService
+            form={serviceForm}
+            serviceTermsEditor={serviceTermsEditor}
+            setServiceAttachments={setServiceAttachments}
+            serviceAttachments={serviceAttachments}
+            serviceSpecificationsEditor={serviceSpecificationsEditor}
+            suppliers={suppliers}
+          />
         </Tabs>
       </Stack>
     </ContentContainer>

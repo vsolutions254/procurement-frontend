@@ -25,13 +25,12 @@ import {
   IconSettings,
   IconCurrencyDollar,
   IconCategory,
-  IconPlus,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import CategoriesTable from "@/components/shared/catalogue/products/categories-table";
 import { Category } from "@/types/category";
-import AddCategoryModal from "@/components/shared/catalogue/add-category-modal";
+import AddCategoryModal from "@/components/shared/catalogue/products/add-category-modal";
+import AddServiceCategoryModal from "@/components/shared/catalogue/services/categories/add-service-category-modal";
 import { createCategory } from "@/lib/redux/features/products/categories/categoriesSlice";
 import { notifications } from "@mantine/notifications";
 import { createServiceCategory } from "@/lib/redux/features/services/categories/serviceCategoriesSlice";
@@ -41,22 +40,35 @@ import ApprovalLimitsSettings from "@/components/merchants/master-settings/appro
 
 export default function MasterSettingsPage() {
   const [activeTab, setActiveTab] = useState<string | null>("general");
-  const [categoryModalOpen, setCategoryModalOpen] = useState(false);
-  const [newCategory, setNewCategory] = useState("");
-  const [categoryDescription, setCategoryDescription] = useState("");
-  const [categoryImage, setCategoryImage] = useState<File | null>(null);
-  const [categoryImagePreview, setCategoryImagePreview] = useState<
-    string | null
-  >(null);
-  const [attachments, setAttachments] = useState<File[]>([]);
-  const [isCreating, setIsCreating] = useState(false);
   const dispatch = useAppDispatch();
 
-  const [categoryType, setCategoryType] = useState<"goods" | "services">(
-    "goods",
+  // --- Goods category modal state ---
+  const [goodsModalOpen, setGoodsModalOpen] = useState(false);
+  const [newGoodsCategory, setNewGoodsCategory] = useState("");
+  const [goodsCategoryDescription, setGoodsCategoryDescription] = useState("");
+  const [goodsCategoryImage, setGoodsCategoryImage] = useState<File | null>(
+    null,
   );
+  const [goodsCategoryImagePreview, setGoodsCategoryImagePreview] = useState<
+    string | null
+  >(null);
+  const [goodsAttachments, setGoodsAttachments] = useState<File[]>([]);
+  const [isCreatingGoods, setIsCreatingGoods] = useState(false);
 
-  const editor = useEditor({
+  // --- Service category modal state ---
+  const [serviceModalOpen, setServiceModalOpen] = useState(false);
+  const [newServiceCategory, setNewServiceCategory] = useState("");
+  const [serviceCategoryDescription, setServiceCategoryDescription] =
+    useState("");
+  const [serviceCategoryImage, setServiceCategoryImage] = useState<File | null>(
+    null,
+  );
+  const [serviceCategoryImagePreview, setServiceCategoryImagePreview] =
+    useState<string | null>(null);
+  const [serviceAttachments, setServiceAttachments] = useState<File[]>([]);
+  const [isCreatingService, setIsCreatingService] = useState(false);
+
+  const goodsEditor = useEditor({
     extensions: [
       StarterKit,
       Underline,
@@ -65,27 +77,51 @@ export default function MasterSettingsPage() {
       Highlight,
       TextAlign.configure({ types: ["heading", "paragraph"] }),
     ],
-    content: categoryDescription || "<p></p>",
+    content: "<p></p>",
     immediatelyRender: false,
-    onUpdate: ({ editor }) => {
-      setCategoryDescription(editor.getHTML());
-    },
+    onUpdate: ({ editor }) => setGoodsCategoryDescription(editor.getHTML()),
   });
 
-  const handleImageUpload = (file: File | null) => {
-    setCategoryImage(file);
+  const serviceEditor = useEditor({
+    extensions: [
+      StarterKit,
+      Underline,
+      Superscript,
+      SubScript,
+      Highlight,
+      TextAlign.configure({ types: ["heading", "paragraph"] }),
+    ],
+    content: "<p></p>",
+    immediatelyRender: false,
+    onUpdate: ({ editor }) => setServiceCategoryDescription(editor.getHTML()),
+  });
+
+  const handleGoodsImageUpload = (file: File | null) => {
+    setGoodsCategoryImage(file);
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) =>
-        setCategoryImagePreview(e.target?.result as string);
+        setGoodsCategoryImagePreview(e.target?.result as string);
       reader.readAsDataURL(file);
     } else {
-      setCategoryImagePreview(null);
+      setGoodsCategoryImagePreview(null);
     }
   };
 
-  const handleAddCategory = async () => {
-    if (!newCategory.trim()) {
+  const handleServiceImageUpload = (file: File | null) => {
+    setServiceCategoryImage(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) =>
+        setServiceCategoryImagePreview(e.target?.result as string);
+      reader.readAsDataURL(file);
+    } else {
+      setServiceCategoryImagePreview(null);
+    }
+  };
+
+  const handleAddGoodsCategory = async () => {
+    if (!newGoodsCategory.trim()) {
       notifications.show({
         title: "Validation Error",
         message: "Category name is required",
@@ -93,34 +129,27 @@ export default function MasterSettingsPage() {
       });
       return;
     }
-
-    const payload = {
-      name: newCategory,
-      description: categoryDescription,
-      image: categoryImage,
-    };
-
-    setIsCreating(true);
+    setIsCreatingGoods(true);
     try {
-      if (categoryType === "services") {
-        await dispatch(createServiceCategory(payload)).unwrap();
-      } else {
-        await dispatch(createCategory(payload)).unwrap();
-      }
-
+      await dispatch(
+        createCategory({
+          name: newGoodsCategory,
+          description: goodsCategoryDescription,
+          image: goodsCategoryImage,
+        }),
+      ).unwrap();
       notifications.show({
         title: "Success",
         message: "Category created successfully",
         color: "green",
       });
-
-      setNewCategory("");
-      setCategoryDescription("");
-      setCategoryImage(null);
-      setCategoryImagePreview(null);
-      setAttachments([]);
-      editor?.commands.setContent("<p></p>");
-      setCategoryModalOpen(false);
+      setNewGoodsCategory("");
+      setGoodsCategoryDescription("");
+      setGoodsCategoryImage(null);
+      setGoodsCategoryImagePreview(null);
+      setGoodsAttachments([]);
+      goodsEditor?.commands.setContent("<p></p>");
+      setGoodsModalOpen(false);
     } catch (error) {
       notifications.show({
         title: "Error",
@@ -130,7 +159,51 @@ export default function MasterSettingsPage() {
         color: "red",
       });
     } finally {
-      setIsCreating(false);
+      setIsCreatingGoods(false);
+    }
+  };
+
+  const handleAddServiceCategory = async (customFields: CustomField[] = []) => {
+    if (!newServiceCategory.trim()) {
+      notifications.show({
+        title: "Validation Error",
+        message: "Category name is required",
+        color: "red",
+      });
+      return;
+    }
+    setIsCreatingService(true);
+    try {
+      await dispatch(
+        createServiceCategory({
+          name: newServiceCategory,
+          description: serviceCategoryDescription,
+          image: serviceCategoryImage,
+          custom_fields: customFields,
+        }),
+      ).unwrap();
+      notifications.show({
+        title: "Success",
+        message: "Service category created successfully",
+        color: "green",
+      });
+      setNewServiceCategory("");
+      setServiceCategoryDescription("");
+      setServiceCategoryImage(null);
+      setServiceCategoryImagePreview(null);
+      setServiceAttachments([]);
+      serviceEditor?.commands.setContent("<p></p>");
+      setServiceModalOpen(false);
+    } catch (error) {
+      notifications.show({
+        title: "Error",
+        message:
+          (error as string) ??
+          "Failed to create service category. Please try again.",
+        color: "red",
+      });
+    } finally {
+      setIsCreatingService(false);
     }
   };
 
@@ -168,8 +241,8 @@ export default function MasterSettingsPage() {
         <GeneralSettings />
 
         <CategoriesSettings
-          setCategoryType={setCategoryType}
-          setCategoryModalOpen={setCategoryModalOpen}
+          setGoodsModalOpen={setGoodsModalOpen}
+          setServiceModalOpen={setServiceModalOpen}
           handleDeleteCategory={handleDeleteCategory}
         />
 
@@ -177,21 +250,39 @@ export default function MasterSettingsPage() {
       </Tabs>
 
       <AddCategoryModal
-        categoryModalOpen={categoryModalOpen}
-        setCategoryModalOpen={setCategoryModalOpen}
-        categoryType={categoryType}
-        newCategory={newCategory}
-        setNewCategory={setNewCategory}
-        categoryImagePreview={categoryImagePreview}
-        setCategoryImage={setCategoryImage}
-        setCategoryImagePreview={setCategoryImagePreview}
-        categoryImage={categoryImage}
-        handleImageUpload={handleImageUpload}
-        editor={editor}
-        setAttachments={setAttachments}
-        attachments={attachments}
-        handleAddCategory={handleAddCategory}
-        isCreating={isCreating}
+        categoryModalOpen={goodsModalOpen}
+        setCategoryModalOpen={setGoodsModalOpen}
+        categoryType="goods"
+        newCategory={newGoodsCategory}
+        setNewCategory={setNewGoodsCategory}
+        categoryImagePreview={goodsCategoryImagePreview}
+        setCategoryImage={setGoodsCategoryImage}
+        setCategoryImagePreview={setGoodsCategoryImagePreview}
+        categoryImage={goodsCategoryImage}
+        handleImageUpload={handleGoodsImageUpload}
+        editor={goodsEditor}
+        setAttachments={setGoodsAttachments}
+        attachments={goodsAttachments}
+        handleAddCategory={handleAddGoodsCategory}
+        isCreating={isCreatingGoods}
+      />
+
+      <AddServiceCategoryModal
+        categoryModalOpen={serviceModalOpen}
+        setCategoryModalOpen={setServiceModalOpen}
+        categoryType="services"
+        newCategory={newServiceCategory}
+        setNewCategory={setNewServiceCategory}
+        categoryImagePreview={serviceCategoryImagePreview}
+        setCategoryImage={setServiceCategoryImage}
+        setCategoryImagePreview={setServiceCategoryImagePreview}
+        categoryImage={serviceCategoryImage}
+        handleImageUpload={handleServiceImageUpload}
+        editor={serviceEditor}
+        setAttachments={setServiceAttachments}
+        attachments={serviceAttachments}
+        handleAddServiceCategory={handleAddServiceCategory}
+        isCreating={isCreatingService}
       />
     </Stack>
   );

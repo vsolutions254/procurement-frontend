@@ -16,17 +16,15 @@ import React, { useEffect, useState } from "react";
 import CategoriesTableSkeleton from "./skeletons/categories-table-skeleton";
 
 const CategoriesTable = ({
-  setCategoryType,
   setCategoryModalOpen,
   handleDeleteCategory,
 }: {
-  setCategoryType: (type: "goods" | "services") => void;
   setCategoryModalOpen: (open: boolean) => void;
   handleDeleteCategory: (category: Category) => void;
 }) => {
   const dispatch = useAppDispatch();
   const { categories, categoriesLoading, pagination } = useAppSelector(
-    (state) => state.product_categories
+    (state) => state.product_categories,
   );
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -47,10 +45,7 @@ const CategoriesTable = ({
         <Button
           leftSection={<IconPlus size={16} />}
           size="sm"
-          onClick={() => {
-            setCategoryType("goods");
-            setCategoryModalOpen(true);
-          }}
+          onClick={() => setCategoryModalOpen(true)}
         >
           Add Category
         </Button>
@@ -69,7 +64,7 @@ const CategoriesTable = ({
               <Table.Td>{category.name}</Table.Td>
               <Table.Td>
                 <Badge variant="light" size="sm">
-                  12
+                  {category.products.length ?? 0}
                 </Badge>
               </Table.Td>
               <Table.Td>

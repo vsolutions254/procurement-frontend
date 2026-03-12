@@ -5,12 +5,10 @@ import { IconPlus } from "@tabler/icons-react";
 import React, { useEffect } from "react";
 
 interface ServiceCategoriesTableProps {
-  setCategoryType: (type: "goods" | "services") => void;
   setCategoryModalOpen: (open: boolean) => void;
 }
 
 const ServiceCategoriesTable = ({
-  setCategoryType,
   setCategoryModalOpen,
 }: ServiceCategoriesTableProps) => {
   const dispatch = useAppDispatch();
@@ -18,9 +16,12 @@ const ServiceCategoriesTable = ({
     (state) => state.service_categories,
   );
 
+  console.log("KATEGORIS", categories);
+
   useEffect(() => {
     dispatch(fetchServiceCategories(1));
   }, [dispatch]);
+
   return (
     <Tabs.Panel value="services" pt="md">
       <Card shadow="sm" padding="lg" radius="md" withBorder>
@@ -29,10 +30,7 @@ const ServiceCategoriesTable = ({
           <Button
             leftSection={<IconPlus size={16} />}
             size="sm"
-            onClick={() => {
-              setCategoryType("services");
-              setCategoryModalOpen(true);
-            }}
+            onClick={() => setCategoryModalOpen(true)}
           >
             Add Category
           </Button>
@@ -46,12 +44,12 @@ const ServiceCategoriesTable = ({
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
-            {categories.slice(1).map((category) => (
+            {categories.map((category) => (
               <Table.Tr key={category.id}>
                 <Table.Td>{category.name}</Table.Td>
                 <Table.Td>
                   <Badge variant="light" size="sm">
-                    8
+                    {category.services_count ?? category.services.length}
                   </Badge>
                 </Table.Td>
                 <Table.Td></Table.Td>

@@ -9,9 +9,9 @@ import ServicesView from "@/components/shared/catalogue/services/services-view";
 import { fetchCategories } from "@/lib/redux/features/products/categories/categoriesSlice";
 import { getProducts } from "@/lib/redux/features/products/productsSlice";
 import { fetchServiceCategories } from "@/lib/redux/features/services/categories/serviceCategoriesSlice";
+import { getServices } from "@/lib/redux/features/services/servicesSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
-  nonTangibleCatalogueItems,
   recommendedProducts,
   recommendedServices,
 } from "@/lib/utils/constants";
@@ -40,6 +40,7 @@ export default function InternalCatalogPage() {
   const dispatch = useAppDispatch();
 
   const { products, pagination } = useAppSelector((state) => state.products);
+  const { services } = useAppSelector((state) => state.services);
   const { categories } = useAppSelector((state) => state.product_categories);
   const { categories: serviceCategories } = useAppSelector(
     (state) => state.service_categories,
@@ -49,10 +50,10 @@ export default function InternalCatalogPage() {
     dispatch(getProducts({ page: 1 }));
     dispatch(fetchCategories(1));
     dispatch(fetchServiceCategories(1));
+    dispatch(getServices({ page: 1 }));
   }, [dispatch]);
 
-  const currentItems =
-    activeTab === "inventory" ? products || [] : nonTangibleCatalogueItems;
+  const currentItems = activeTab === "inventory" ? products || [] : services;
   const currentCategories =
     activeTab === "inventory" ? categories : serviceCategories;
 

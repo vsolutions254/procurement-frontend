@@ -1,24 +1,169 @@
 import {
+  fetchServiceCategories,
+  createServiceCategory,
+} from "@/lib/redux/features/services/categories/serviceCategoriesSlice";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import {
+  ActionIcon,
   Button,
   Card,
+  FileInput,
   Grid,
   Group,
+  Loader,
+  MultiSelect,
+  NumberInput,
   Select,
   Stack,
   Tabs,
+  Text,
+  Textarea,
   TextInput,
   Title,
 } from "@mantine/core";
 import { UseFormReturnType } from "@mantine/form";
-import React from "react";
+import { notifications } from "@mantine/notifications";
+import { RichTextEditor } from "@mantine/tiptap";
+import { IconUpload, IconX } from "@tabler/icons-react";
+import React, { useEffect, useState } from "react";
+import TaxDetails from "../../../products/tax-details";
+import { Editor, useEditor } from "@tiptap/react";
+import { User } from "@/types/user";
+import StarterKit from "@tiptap/starter-kit";
+import Underline from "@tiptap/extension-underline";
+import Superscript from "@tiptap/extension-superscript";
+import SubScript from "@tiptap/extension-subscript";
+import Highlight from "@tiptap/extension-highlight";
+import TextAlign from "@tiptap/extension-text-align";
+import AddServiceCategoryModal from "@/components/shared/catalogue/services/categories/add-service-category-modal";
 
 const CreateService = ({
   form,
+  serviceTermsEditor,
+  serviceSpecificationsEditor,
+  setServiceAttachments,
+  serviceAttachments,
+  suppliers,
 }: {
   form: UseFormReturnType<CreateServiceFormData>;
+  serviceTermsEditor: Editor | null;
+  serviceSpecificationsEditor: Editor | null;
+  setServiceAttachments: React.Dispatch<React.SetStateAction<File[]>>;
+  serviceAttachments: File[];
+  suppliers: User[];
 }) => {
+  const dispatch = useAppDispatch();
+  const { categories } = useAppSelector((state) => state.service_categories);
+
+  const [serviceModalOpen, setServiceModalOpen] = useState(false);
+  const [newServiceCategory, setNewServiceCategory] = useState("");
+  const [serviceCategoryDescription, setServiceCategoryDescription] =
+    useState("");
+  const [serviceCategoryImage, setServiceCategoryImage] = useState<File | null>(
+    null,
+  );
+  const [serviceCategoryImagePreview, setServiceCategoryImagePreview] =
+    useState<string | null>(null);
+  const [serviceCategoryAttachments, setServiceCategoryAttachments] = useState<
+    File[]
+  >([]);
+  const [isCreatingService, setIsCreatingService] = useState(false);
+
+  const serviceEditor = useEditor({
+    extensions: [
+      StarterKit,
+      Underline,
+      Superscript,
+      SubScript,
+      Highlight,
+      TextAlign.configure({ types: ["heading", "paragraph"] }),
+    ],
+    content: "<p></p>",
+    immediatelyRender: false,
+    onUpdate: ({ editor }) => setServiceCategoryDescription(editor.getHTML()),
+  });
+
+  useEffect(() => {
+    dispatch(fetchServiceCategories(1));
+  }, [dispatch]);
+
+  const handleServiceImageUpload = (file: File | null) => {
+    setServiceCategoryImage(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) =>
+        setServiceCategoryImagePreview(e.target?.result as string);
+      reader.readAsDataURL(file);
+    } else {
+      setServiceCategoryImagePreview(null);
+    }
+  };
+
+  const handleAddServiceCategory = async (customFields: CustomField[] = []) => {
+    if (!newServiceCategory.trim()) {
+      notifications.show({
+        title: "Validation Error",
+        message: "Category name is required",
+        color: "red",
+      });
+      return;
+    }
+    setIsCreatingService(true);
+    try {
+      await dispatch(
+        createServiceCategory({
+          name: newServiceCategory,
+          description: serviceCategoryDescription,
+          image: serviceCategoryImage,
+          custom_fields: customFields,
+        }),
+      ).unwrap();
+      notifications.show({
+        title: "Success",
+        message: "Service category created successfully",
+        color: "green",
+      });
+      setNewServiceCategory("");
+      setServiceCategoryDescription("");
+      setServiceCategoryImage(null);
+      setServiceCategoryImagePreview(null);
+      setServiceCategoryAttachments([]);
+      serviceEditor?.commands.setContent("<p></p>");
+      setServiceModalOpen(false);
+      dispatch(fetchServiceCategories(1));
+    } catch (error) {
+      notifications.show({
+        title: "Error",
+        message:
+          (error as string) ??
+          "Failed to create service category. Please try again.",
+        color: "red",
+      });
+    } finally {
+      setIsCreatingService(false);
+    }
+  };
+
   return (
     <Tabs.Panel value="service" pt="md">
+      <AddServiceCategoryModal
+        categoryModalOpen={serviceModalOpen}
+        setCategoryModalOpen={setServiceModalOpen}
+        categoryType="services"
+        newCategory={newServiceCategory}
+        setNewCategory={setNewServiceCategory}
+        categoryImagePreview={serviceCategoryImagePreview}
+        setCategoryImage={setServiceCategoryImage}
+        setCategoryImagePreview={setServiceCategoryImagePreview}
+        categoryImage={serviceCategoryImage}
+        handleImageUpload={handleServiceImageUpload}
+        editor={serviceEditor}
+        setAttachments={setServiceCategoryAttachments}
+        attachments={serviceCategoryAttachments}
+        handleAddServiceCategory={handleAddServiceCategory}
+        isCreating={isCreatingService}
+      />
+
       <Grid gutter="lg">
         <Grid.Col span={{ base: 12, md: 8 }}>
           <Stack gap="lg">
@@ -30,8 +175,8 @@ const CreateService = ({
                 <TextInput
                   label="Service Name"
                   placeholder="e.g., Flight Booking Service"
-                  key={form.key("product_name")}
-                  {...form.getInputProps("product_name")}
+                  key={form.key("service_name")}
+                  {...form.getInputProps("service_name")}
                   required
                 />
                 <Grid gutter="md">
@@ -46,7 +191,18 @@ const CreateService = ({
                             label: category.name,
                           }))}
                           key={form.key("category_id")}
-                          {...form.getInputProps("category_id")}
+                          value={
+                            form.values.category_id
+                              ? form.values.category_id.toString()
+                              : null
+                          }
+                          onChange={(value) =>
+                            form.setFieldValue(
+                              "category_id",
+                              value ? parseInt(value, 10) : 0,
+                            )
+                          }
+                          error={form.errors.category_id}
                           searchable
                           required
                         />
@@ -54,18 +210,7 @@ const CreateService = ({
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => {
-                          const categoryName = prompt("Enter category name:");
-                          if (categoryName?.trim()) {
-                            const newId = Date.now().toString();
-                            form.setFieldValue("category_id", newId);
-                            notifications.show({
-                              title: "Category Created",
-                              message: `Category "${categoryName}" created successfully`,
-                              color: "green",
-                            });
-                          }
-                        }}
+                        onClick={() => setServiceModalOpen(true)}
                       >
                         +
                       </Button>
@@ -88,7 +233,7 @@ const CreateService = ({
                   label="Service Description"
                   placeholder="Detailed description of the service offered..."
                   key={form.key("description")}
-                  {...form.getInputProps("descrition")}
+                  {...form.getInputProps("description")}
                   rows={4}
                   required
                 />
@@ -115,14 +260,12 @@ const CreateService = ({
                           <RichTextEditor.Highlight />
                           <RichTextEditor.Code />
                         </RichTextEditor.ControlsGroup>
-
                         <RichTextEditor.ControlsGroup>
                           <RichTextEditor.H1 />
                           <RichTextEditor.H2 />
                           <RichTextEditor.H3 />
                           <RichTextEditor.H4 />
                         </RichTextEditor.ControlsGroup>
-
                         <RichTextEditor.ControlsGroup>
                           <RichTextEditor.Blockquote />
                           <RichTextEditor.Hr />
@@ -131,19 +274,16 @@ const CreateService = ({
                           <RichTextEditor.Subscript />
                           <RichTextEditor.Superscript />
                         </RichTextEditor.ControlsGroup>
-
                         <RichTextEditor.ControlsGroup>
                           <RichTextEditor.Link />
                           <RichTextEditor.Unlink />
                         </RichTextEditor.ControlsGroup>
-
                         <RichTextEditor.ControlsGroup>
                           <RichTextEditor.AlignLeft />
                           <RichTextEditor.AlignCenter />
                           <RichTextEditor.AlignJustify />
                           <RichTextEditor.AlignRight />
                         </RichTextEditor.ControlsGroup>
-
                         <RichTextEditor.ControlsGroup>
                           <RichTextEditor.Control
                             onClick={() =>
@@ -158,7 +298,6 @@ const CreateService = ({
                           </RichTextEditor.Control>
                         </RichTextEditor.ControlsGroup>
                       </RichTextEditor.Toolbar>
-
                       <RichTextEditor.Content style={{ minHeight: "150px" }} />
                     </RichTextEditor>
                   )}
@@ -173,11 +312,7 @@ const CreateService = ({
                           ...files,
                         ]);
                         files.forEach((file) => {
-                          const link = `<p><a href="#" data-file="${
-                            file.name
-                          }">${file.name}</a> (${(file.size / 1024).toFixed(
-                            1,
-                          )} KB)</p>`;
+                          const link = `<p><a href="#" data-file="${file.name}">${file.name}</a> (${(file.size / 1024).toFixed(1)} KB)</p>`;
                           serviceTermsEditor?.commands.insertContent(link);
                         });
                       }
@@ -213,46 +348,6 @@ const CreateService = ({
                     </div>
                   )}
                 </div>
-
-                {form.values.category_id === "Travel" && (
-                  <Grid gutter="md">
-                    <Grid.Col span={12}>
-                      <Text size="sm" fw={500} c="blue">
-                        Travel Details
-                      </Text>
-                    </Grid.Col>
-                    <Grid.Col span={6}>
-                      <Select
-                        label="Travel Type"
-                        data={["Domestic", "International", "Multi-city"]}
-                      />
-                    </Grid.Col>
-                    <Grid.Col span={6}>
-                      <TextInput
-                        label="Destination"
-                        placeholder="City, Country"
-                      />
-                    </Grid.Col>
-                    <Grid.Col span={6}>
-                      <TextInput label="Travel Date" type="date" />
-                    </Grid.Col>
-                    <Grid.Col span={6}>
-                      <NumberInput
-                        label="Number of Travelers"
-                        min={1}
-                        max={20}
-                        defaultValue={1}
-                      />
-                    </Grid.Col>
-                    <Grid.Col span={12}>
-                      <Textarea
-                        label="Travel Purpose"
-                        placeholder="Business meeting, conference, training, etc."
-                        rows={2}
-                      />
-                    </Grid.Col>
-                  </Grid>
-                )}
               </Stack>
             </Card>
 
@@ -264,15 +359,12 @@ const CreateService = ({
                 <MultiSelect
                   label="Select Service Providers"
                   placeholder="Choose one or more providers"
-                  data={[
-                    "Kenya Airways",
-                    "Serena Hotels",
-                    "Avis Kenya",
-                    "Corporate Training Ltd",
-                    "Business Consulting Kenya",
-                  ]}
-                  key={form.key("suppliers")}
-                  {...form.getInputProps("suppliers")}
+                  data={suppliers.map((supplier) => ({
+                    value: supplier.id.toString(),
+                    label: supplier.company_name,
+                  }))}
+                  key={form.key("supplier_ids")}
+                  {...form.getInputProps("supplier_ids")}
                   searchable
                   required
                 />
@@ -281,7 +373,53 @@ const CreateService = ({
           </Stack>
         </Grid.Col>
 
-        <TaxDetails form={form} />
+        <Grid.Col span={{ base: 12, md: 4 }}>
+          <Stack gap="lg">
+            <TaxDetails form={form} />
+
+            <Card shadow="sm" padding="lg" radius="md" withBorder>
+              <Title order={4} mb="md">
+                Service Specifications
+              </Title>
+              <Stack gap="md">
+                {!serviceSpecificationsEditor ? (
+                  <Group justify="center" p="xl">
+                    <Loader size="sm" />
+                    <Text size="sm" c="dimmed">
+                      Loading editor...
+                    </Text>
+                  </Group>
+                ) : (
+                  <RichTextEditor editor={serviceSpecificationsEditor}>
+                    <RichTextEditor.Toolbar sticky stickyOffset={60}>
+                      <RichTextEditor.ControlsGroup>
+                        <RichTextEditor.Bold />
+                        <RichTextEditor.Italic />
+                        <RichTextEditor.Underline />
+                        <RichTextEditor.Strikethrough />
+                        <RichTextEditor.ClearFormatting />
+                      </RichTextEditor.ControlsGroup>
+                      <RichTextEditor.ControlsGroup>
+                        <RichTextEditor.H1 />
+                        <RichTextEditor.H2 />
+                        <RichTextEditor.H3 />
+                      </RichTextEditor.ControlsGroup>
+                      <RichTextEditor.ControlsGroup>
+                        <RichTextEditor.BulletList />
+                        <RichTextEditor.OrderedList />
+                      </RichTextEditor.ControlsGroup>
+                      <RichTextEditor.ControlsGroup>
+                        <RichTextEditor.Link />
+                        <RichTextEditor.Unlink />
+                      </RichTextEditor.ControlsGroup>
+                    </RichTextEditor.Toolbar>
+                    <RichTextEditor.Content style={{ minHeight: "150px" }} />
+                  </RichTextEditor>
+                )}
+              </Stack>
+            </Card>
+          </Stack>
+        </Grid.Col>
       </Grid>
     </Tabs.Panel>
   );

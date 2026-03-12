@@ -7,8 +7,10 @@ import React, { useEffect } from "react";
 
 const ServicesFilters = () => {
   const dispatch = useAppDispatch();
-  const { categories } = useAppSelector((state) => state.product_categories);
-  const { categories: serviceCategories } = useAppSelector(
+  const { categories = [] } = useAppSelector(
+    (state) => state.product_categories,
+  );
+  const { categories: serviceCategories = [] } = useAppSelector(
     (state) => state.service_categories,
   );
 
@@ -16,6 +18,7 @@ const ServicesFilters = () => {
     dispatch(fetchCategories(1));
     dispatch(fetchServiceCategories(1));
   }, [dispatch]);
+
   return (
     <Tabs.Panel value="services" pt="md">
       <Paper p="md" withBorder>
@@ -30,10 +33,16 @@ const ServicesFilters = () => {
           <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
             <Select
               placeholder="All Categories"
-              data={categories.concat(serviceCategories).map((cat) => ({
-                value: cat.id.toString(),
-                label: cat.name,
-              }))}
+              data={[
+                ...categories.map((cat) => ({
+                  value: `product_${cat.id}`,
+                  label: cat.name,
+                })),
+                ...serviceCategories.map((cat) => ({
+                  value: `service_${cat.id}`,
+                  label: cat.name,
+                })),
+              ]}
               size="md"
             />
           </Grid.Col>
