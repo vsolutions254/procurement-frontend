@@ -28,7 +28,7 @@ import { IconUpload, IconX } from "@tabler/icons-react";
 import React, { useEffect, useState } from "react";
 import TaxDetails from "../../../products/tax-details";
 import { Editor, useEditor } from "@tiptap/react";
-import { User } from "@/types/user";
+
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import Superscript from "@tiptap/extension-superscript";

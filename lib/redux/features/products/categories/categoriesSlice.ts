@@ -1,7 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import clientaxiosinstance from "@/lib/services/clientaxiosinstance";
 import { CategoriesState } from "@/lib/redux/types/product-categories-state";
-import { Category } from "@/types/category";
 
 const initialState: CategoriesState = {
   categories: [],

@@ -4,7 +4,7 @@ import { ContentContainer } from "@/components/layout/content-container";
 import { editUserReq, fetchUser } from "@/lib/redux/features/auth/authSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { RootState } from "@/lib/redux/store";
-import { User } from "@/types/user";
+
 import {
   Card,
   Text,

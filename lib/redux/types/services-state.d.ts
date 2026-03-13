@@ -4,7 +4,7 @@ type ServicesState = {
   services: Service[];
   servicesLoading: boolean;
   servicesError: string | null;
-  service: Service;
+  service: Service | null;
   serviceLoading: boolean;
   serviceError: string | null;
   pagination: {

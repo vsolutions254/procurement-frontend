@@ -28,7 +28,7 @@ import {
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { Category } from "@/types/category";
+
 import AddCategoryModal from "@/components/shared/catalogue/products/add-category-modal";
 import AddServiceCategoryModal from "@/components/shared/catalogue/services/categories/add-service-category-modal";
 import { createCategory } from "@/lib/redux/features/products/categories/categoriesSlice";

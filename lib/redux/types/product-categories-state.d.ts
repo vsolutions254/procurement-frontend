@@ -1,5 +1,3 @@
-import { Category } from "@/types/category";
-
 export type CategoriesState = {
   categories: Category[];
   categoriesLoading: boolean;

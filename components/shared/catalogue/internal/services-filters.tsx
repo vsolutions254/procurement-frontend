@@ -1,23 +1,29 @@
+import { useDebounce } from "@/hooks/useDebounce";
 import { fetchCategories } from "@/lib/redux/features/products/categories/categoriesSlice";
 import { fetchServiceCategories } from "@/lib/redux/features/services/categories/serviceCategoriesSlice";
+import { getServices } from "@/lib/redux/features/services/servicesSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { Grid, Paper, Select, Tabs, TextInput } from "@mantine/core";
 import { IconSearch } from "@tabler/icons-react";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 const ServicesFilters = () => {
   const dispatch = useAppDispatch();
   const { categories = [] } = useAppSelector(
-    (state) => state.product_categories,
-  );
-  const { categories: serviceCategories = [] } = useAppSelector(
     (state) => state.service_categories,
   );
+  const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   useEffect(() => {
-    dispatch(fetchCategories(1));
     dispatch(fetchServiceCategories(1));
   }, [dispatch]);
+
+  useEffect(() => {
+    if (debouncedSearchTerm) {
+      dispatch(getServices({ search_term: debouncedSearchTerm }));
+    }
+  }, [debouncedSearchTerm, dispatch]);
 
   return (
     <Tabs.Panel value="services" pt="md">
@@ -25,9 +31,12 @@ const ServicesFilters = () => {
         <Grid gutter="md">
           <Grid.Col span={{ base: 12, md: 6 }}>
             <TextInput
-              placeholder="Search services, suppliers, or categories..."
+              placeholder="Search by service name, supplier name or category name"
               leftSection={<IconSearch size={16} />}
               size="md"
+              onChange={(event) => {
+                setSearchTerm(event.target.value);
+              }}
             />
           </Grid.Col>
           <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
@@ -35,14 +44,13 @@ const ServicesFilters = () => {
               placeholder="All Categories"
               data={[
                 ...categories.map((cat) => ({
-                  value: `product_${cat.id}`,
-                  label: cat.name,
-                })),
-                ...serviceCategories.map((cat) => ({
-                  value: `service_${cat.id}`,
+                  value: cat.id.toString(),
                   label: cat.name,
                 })),
               ]}
+              onChange={(val) => {
+                dispatch(getServices({ category_id: parseInt(val!) }));
+              }}
               size="md"
             />
           </Grid.Col>
@@ -50,12 +58,18 @@ const ServicesFilters = () => {
             <Select
               placeholder="Sort by"
               data={[
-                "Relevance",
-                "Price: Low to High",
-                "Price: High to Low",
-                "Name A-Z",
-                "Name Z-A",
+                { label: "Price: Low to High", value: "price_low_high" },
+                { label: "Price: High to Low", value: "price_high_low" },
+                { label: "Name A-Z", value: "name_asc" },
+                { label: "Name Z-A", value: "name_desc" },
               ]}
+              onChange={(val) => {
+                dispatch(
+                  getServices({
+                    sort_by: val as SortBy,
+                  }),
+                );
+              }}
               size="md"
             />
           </Grid.Col>

@@ -9,21 +9,10 @@ import {
   Text,
 } from "@mantine/core";
 import { IconFilter } from "@tabler/icons-react";
-import React, { Dispatch, SetStateAction, useEffect } from "react";
+import React, { useEffect } from "react";
 
-const ECommerceFilters = ({
-  viewMode,
-  setViewMode,
-  activeTab,
-  pagination,
-}: {
-  viewMode: "grid" | "list";
-  setViewMode: Dispatch<SetStateAction<"grid" | "list">>;
-  activeTab: string;
-  pagination: { last_page: number };
-}) => {
+const ECommerceFilters = () => {
   const dispatch = useAppDispatch();
-  const { categories } = useAppSelector((state) => state.product_categories);
 
   useEffect(() => {
     dispatch(fetchCategories(1));
@@ -38,7 +27,7 @@ const ECommerceFilters = ({
       <Accordion variant="contained">
         <Accordion.Item value="base_price">
           <Accordion.Control icon={<IconFilter size={16} />}>
-            Price Range
+            Price
           </Accordion.Control>
           <Accordion.Panel>
             <Stack gap="md">

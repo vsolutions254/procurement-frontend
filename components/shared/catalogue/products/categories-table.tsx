@@ -1,6 +1,6 @@
 import { fetchCategories } from "@/lib/redux/features/products/categories/categoriesSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { Category } from "@/types/category";
+
 import {
   ActionIcon,
   Badge,

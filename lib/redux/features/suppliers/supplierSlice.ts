@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import clientaxiosinstance from "@/lib/services/clientaxiosinstance";
-import { User } from "@/types/user";
+
 import { SuppliersState } from "../../types/suppliers-state";
 
 const initialState: SuppliersState = {
@@ -23,7 +23,7 @@ export const fetchSuppliers = createAsyncThunk(
     await clientaxiosinstance.get("/sanctum/csrf-cookie");
     const response = await clientaxiosinstance.get(`/suppliers?page=${page}`);
     return response.data;
-  }
+  },
 );
 
 export const searchSuppliers = createAsyncThunk(
@@ -31,10 +31,10 @@ export const searchSuppliers = createAsyncThunk(
   async (searchTerm: string = "") => {
     await clientaxiosinstance.get("/sanctum/csrf-cookie");
     const response = await clientaxiosinstance.get(
-      `/suppliers/search?searchTerm=${searchTerm}`
+      `/suppliers/search?searchTerm=${searchTerm}`,
     );
     return response.data;
-  }
+  },
 );
 
 export const suppliersSlice = createSlice({

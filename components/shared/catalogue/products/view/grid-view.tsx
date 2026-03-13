@@ -52,71 +52,48 @@ const ProductGridView = ({ activeTab }: { activeTab: string }) => {
           return (
             <Grid.Col key={item.id} span={{ base: 12, sm: 6, lg: 4 }}>
               <Card shadow="sm" padding="lg" radius="md" withBorder h="100%">
-                {activeTab === "inventory" ? (
-                  <Card.Section style={{ position: "relative" }}>
-                    <Image
-                      src={
-                        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/storage/${item.image}` ||
-                        "/placeholder.svg"
-                      }
-                      height={180}
-                      alt={item.name}
-                    />
+                <Card.Section style={{ position: "relative" }}>
+                  <Image
+                    src={
+                      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/storage/${item.image}` ||
+                      "/placeholder.svg"
+                    }
+                    height={180}
+                    alt={item.name}
+                  />
 
-                    <Group
-                      gap="xs"
-                      style={{
-                        position: "absolute",
-                        top: 8,
-                        right: 8,
-                      }}
-                    >
-                      <ActionIcon variant="filled" color="blue" size="sm">
-                        <Link href={`/application/catalogue/${item.id}`}>
-                          <IconEye size={16} />
-                        </Link>
-                      </ActionIcon>
-
-                      <ActionIcon variant="filled" color="orange" size="sm">
-                        <Link href={`/application/catalogue/${item.id}/edit`}>
-                          <IconEdit size={16} />
-                        </Link>
-                      </ActionIcon>
-
-                      <ActionIcon
-                        variant="filled"
-                        color="red"
-                        size="sm"
-                        onClick={() => handleDeleteClick(item.id, item.name)}
-                      >
-                        <IconTrash size={16} />
-                      </ActionIcon>
-                    </Group>
-                  </Card.Section>
-                ) : (
-                  <Card.Section
-                    p="md"
+                  <Group
+                    gap="xs"
                     style={{
-                      minHeight: 120,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      backgroundColor: "#f8f9fa",
+                      position: "absolute",
+                      top: 8,
+                      right: 8,
                     }}
                   >
-                    <Link
-                      href={`/application/cart/non-tangible/${item.id}`}
-                      style={{ textDecoration: "none" }}
+                    <ActionIcon variant="filled" color="blue" size="sm">
+                      <Link href={`/application/catalogue/products/${item.id}`}>
+                        <IconEye size={16} />
+                      </Link>
+                    </ActionIcon>
+
+                    <ActionIcon variant="filled" color="orange" size="sm">
+                      <Link
+                        href={`/application/catalogue/products/${item.id}/edit`}
+                      >
+                        <IconEdit size={16} />
+                      </Link>
+                    </ActionIcon>
+
+                    <ActionIcon
+                      variant="filled"
+                      color="red"
+                      size="sm"
+                      onClick={() => handleDeleteClick(item.id, item.name)}
                     >
-                      <Group>
-                        <IconPlane size={32} color="#228be6" />
-                        <Text size="sm" c="blue" fw={500}>
-                          Click to edit service
-                        </Text>
-                      </Group>
-                    </Link>
-                  </Card.Section>
-                )}
+                      <IconTrash size={16} />
+                    </ActionIcon>
+                  </Group>
+                </Card.Section>
 
                 <Stack gap="xs" mt="md">
                   <Group justify="space-between" align="flex-start">

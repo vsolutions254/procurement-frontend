@@ -30,7 +30,6 @@ const ProductsView = ({
   const { products, productsLoading } = useAppSelector(
     (state) => state.products,
   );
-  console.log("products in view:", products, "loading:", productsLoading);
 
   return (
     <Grid.Col span={{ base: 12, md: 9 }}>

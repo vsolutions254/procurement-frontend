@@ -10,11 +10,9 @@ import {
   Card,
   Grid,
   Group,
-  Select,
   Stack,
   Table,
   Text,
-  TextInput,
   ThemeIcon,
   Tooltip,
 } from "@mantine/core";
@@ -22,10 +20,10 @@ import {
   IconEye,
   IconGrid3x3,
   IconList,
-  IconSearch,
   IconBriefcase,
 } from "@tabler/icons-react";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import ServiceGridCard from "./service-grid-card";
 import { categoryIcons } from "@/lib/utils/component-constants";
 
@@ -33,54 +31,51 @@ interface ServicesViewProps {
   onView?: (id: number) => void;
 }
 
+function getSupplierName(supplier: any): string {
+  return (
+    supplier?.supplier_trading_name ||
+    supplier?.company_name ||
+    (supplier?.first_name && supplier?.last_name
+      ? `${supplier.first_name} ${supplier.last_name}`
+      : null) ||
+    "No supplier"
+  );
+}
+
+function taxStatusColor(status: string) {
+  if (status === "taxable") return "green";
+  if (status === "exempt") return "orange";
+  if (status === "zero_rated") return "blue";
+  return "gray";
+}
+
+function taxStatusLabel(status: string) {
+  if (!status) return "No status";
+  return status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 const ServicesView = ({ onView }: ServicesViewProps) => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [search, setSearch] = useState("");
-  const [category, setCategory] = useState<string | null>(null);
+  const router = useRouter();
 
   const { services } = useAppSelector((state) => state.services);
 
   const handleView = (id: number) => {
-    onView?.(id);
+    if (onView) {
+      onView(id);
+    } else {
+      router.push(`/application/catalogue/services/${id}`);
+    }
   };
 
   return (
     <Grid.Col span={{ base: 12, md: 9 }}>
       <Stack gap="md">
-        {/* ── Toolbar ── */}
         <Group justify="space-between" align="center" wrap="wrap" gap="sm">
-          <Group gap="sm" style={{ flex: 1, minWidth: 200 }}>
-            <TextInput
-              placeholder="Search services..."
-              leftSection={<IconSearch size={15} />}
-              value={search}
-              onChange={(e) => setSearch(e.currentTarget.value)}
-              radius="md"
-              size="sm"
-              style={{ flex: 1 }}
-            />
-            <Select
-              placeholder="All categories"
-              data={[
-                "All",
-                "Travel",
-                "Transport",
-                "Professional Services",
-                "Consulting",
-              ]}
-              value={category}
-              onChange={setCategory}
-              clearable
-              radius="md"
-              size="sm"
-              w={180}
-            />
-          </Group>
-
+          <Text size="sm" c="dimmed">
+            {services.length} service{services.length !== 1 ? "s" : ""}
+          </Text>
           <Group gap={4}>
-            <Text size="sm" c="dimmed" mr={4}>
-              {services.length} service{services.length !== 1 ? "s" : ""}
-            </Text>
             <Button
               variant={viewMode === "grid" ? "filled" : "subtle"}
               size="xs"
@@ -156,7 +151,7 @@ const ServicesView = ({ onView }: ServicesViewProps) => {
                     </Table.Th>
                     <Table.Th>
                       <Text size="xs" fw={700} tt="uppercase" c="dimmed">
-                        Status
+                        Tax
                       </Text>
                     </Table.Th>
                     <Table.Th />
@@ -164,9 +159,19 @@ const ServicesView = ({ onView }: ServicesViewProps) => {
                 </Table.Thead>
                 <Table.Tbody>
                   {services.map((service) => {
-                    const color = categoryColors[service.category] ?? "gray";
+                    const color =
+                      categoryColors[service.category?.name] ?? "gray";
+                    const primarySupplier = service.sellable?.suppliers?.[0];
+                    const taxStatus = service.sellable?.tax_status;
+                    // tax rate comes from the eager-loaded Tax model, or falls
+                    // back to the inline tax_value on the Sellable pivot
+                    const taxRate =
+                      service.sellable?.tax?.rate ??
+                      service.sellable?.tax_value;
+
                     return (
                       <Table.Tr key={service.id}>
+                        {/* Service */}
                         <Table.Td>
                           <Group gap="sm" wrap="nowrap">
                             <ThemeIcon
@@ -176,7 +181,7 @@ const ServicesView = ({ onView }: ServicesViewProps) => {
                               color={color}
                               style={{ flexShrink: 0 }}
                             >
-                              {categoryIcons[service.category] ?? (
+                              {categoryIcons[service.category?.name] ?? (
                                 <IconBriefcase size={15} />
                               )}
                             </ThemeIcon>
@@ -185,27 +190,85 @@ const ServicesView = ({ onView }: ServicesViewProps) => {
                                 {service.name}
                               </Text>
                               <Text size="xs" c="dimmed">
-                                {service.id}
+                                #{service.id}
                               </Text>
                             </Box>
                           </Group>
                         </Table.Td>
+
+                        {/* Category */}
                         <Table.Td>
-                          <Badge variant="light" color={color} size="sm">
-                            {service.category.name}
-                          </Badge>
+                          {service.category?.name ? (
+                            <Badge variant="light" color={color} size="sm">
+                              {service.category.name}
+                            </Badge>
+                          ) : (
+                            <Text size="xs" c="dimmed" fs="italic">
+                              No category
+                            </Text>
+                          )}
                         </Table.Td>
+
+                        {/* Supplier */}
                         <Table.Td>
-                          <Text size="sm" c="dimmed">
-                            {service.sellable.suppliers[0].name}
-                          </Text>
+                          {primarySupplier ? (
+                            <Text size="sm" c="dimmed" lineClamp={1}>
+                              {getSupplierName(primarySupplier)}
+                            </Text>
+                          ) : (
+                            <Text size="xs" c="dimmed" fs="italic">
+                              No supplier
+                            </Text>
+                          )}
                         </Table.Td>
+
+                        {/* Price */}
                         <Table.Td>
-                          <Text size="sm" fw={700} c="cyan.6">
-                            {service.base_price}
-                          </Text>
+                          {service.base_price != null ? (
+                            <Text size="sm" fw={700} c="cyan.6">
+                              {Number(service.base_price).toLocaleString(
+                                "en-KE",
+                                { minimumFractionDigits: 2 },
+                              )}
+                            </Text>
+                          ) : (
+                            <Text size="xs" c="dimmed" fs="italic">
+                              No price
+                            </Text>
+                          )}
                         </Table.Td>
-                        <Table.Td></Table.Td>
+
+                        {/* Tax */}
+                        <Table.Td>
+                          {taxStatus ? (
+                            <Stack gap={2}>
+                              <Badge
+                                variant="light"
+                                color={taxStatusColor(taxStatus)}
+                                size="xs"
+                              >
+                                {taxStatusLabel(taxStatus)}
+                              </Badge>
+                              {taxRate != null ? (
+                                <Text size="xs" c="dimmed">
+                                  {service.sellable?.tax_value_type === "fixed"
+                                    ? `KES ${taxRate}`
+                                    : `${taxRate}%`}
+                                </Text>
+                              ) : (
+                                <Text size="xs" c="dimmed" fs="italic">
+                                  No tax rate
+                                </Text>
+                              )}
+                            </Stack>
+                          ) : (
+                            <Text size="xs" c="dimmed" fs="italic">
+                              No tax info
+                            </Text>
+                          )}
+                        </Table.Td>
+
+                        {/* Actions */}
                         <Table.Td>
                           <Tooltip label="View details" withArrow>
                             <ActionIcon

@@ -1,6 +1,4 @@
-import { Product } from "./product";
-
-export type Category = {
+type Category = {
   id: number;
   name: string;
   description: string;
@@ -8,4 +6,5 @@ export type Category = {
   products: Product[];
   services: Service[];
   services_count?: number;
+  custom_fields?: CustomField[];
 };

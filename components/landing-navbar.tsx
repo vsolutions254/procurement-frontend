@@ -29,7 +29,7 @@ import { useEffect } from "react";
 import { useDisclosure } from "@mantine/hooks";
 import { fetchUser, logout } from "@/lib/redux/features/auth/authSlice";
 import { getInitials } from "@/lib/utils/helpers";
-import { User } from "@/types/user";
+
 import { notifications } from "@mantine/notifications";
 import { useRouter } from "next/navigation";
 
@@ -38,9 +38,10 @@ export function LandingNavbar() {
   const dispatch = useAppDispatch();
   const router = useRouter();
 
-  const { user } = useAppSelector(
-    (state: RootState) => state.auth
-  ) as { user: User | null; loading: boolean };
+  const { user } = useAppSelector((state: RootState) => state.auth) as {
+    user: User | null;
+    loading: boolean;
+  };
 
   useEffect(() => {
     dispatch(fetchUser());
@@ -104,7 +105,7 @@ export function LandingNavbar() {
                       <Avatar size={32} radius="xl" color="cyan">
                         {getInitials(
                           user.company_name ??
-                            (user.first_name || "") + (user.last_name || "")
+                            (user.first_name || "") + (user.last_name || ""),
                         )}
                       </Avatar>
                       <IconChevronDown size={16} stroke={1.5} />
@@ -181,7 +182,7 @@ export function LandingNavbar() {
                 <Avatar size={32} radius="xl" color="cyan">
                   {getInitials(
                     user.company_name ??
-                      (user.first_name || "") + (user.last_name || "")
+                      (user.first_name || "") + (user.last_name || ""),
                   )}
                 </Avatar>
                 <Text size="sm">{user.email}</Text>

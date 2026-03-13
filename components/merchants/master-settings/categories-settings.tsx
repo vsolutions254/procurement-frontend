@@ -1,6 +1,6 @@
 import CategoriesTable from "@/components/shared/catalogue/products/categories-table";
 import ServiceCategoriesTable from "@/components/shared/catalogue/services/categories/categories-table";
-import { Category } from "@/types/category";
+
 import { Tabs } from "@mantine/core";
 import React from "react";
 

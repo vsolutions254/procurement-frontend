@@ -87,14 +87,7 @@ export default function InternalCatalogPage() {
           handleRejectRecommendation={handleRejectRecommendation}
         />
         <Grid>
-          {activeTab !== "recommendations" && (
-            <ECommerceFilters
-              viewMode={viewMode}
-              setViewMode={setViewMode}
-              pagination={pagination}
-              activeTab={activeTab!}
-            />
-          )}
+          {activeTab !== "recommendations" && <ECommerceFilters />}
 
           {activeTab === "inventory" && (
             <ProductsView

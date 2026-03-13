@@ -7,7 +7,7 @@ const initialState: ServicesState = {
   services: [],
   servicesLoading: false,
   servicesError: null,
-  service: {} as Service,
+  service: null,
   serviceLoading: false,
   serviceError: null,
   pagination: {
@@ -111,8 +111,12 @@ export const getService = createAsyncThunk(
 
       const response = await clientaxiosinstance.get(`/services/${item_id}`);
 
+      console.log("SAVIS TATA", response.data);
+
       return response.data;
     } catch (error: unknown) {
+      console.log("SAVIS ERAA", error);
+
       if (axios.isAxiosError(error) && error.response) {
         return rejectWithValue(error.response.data);
       }

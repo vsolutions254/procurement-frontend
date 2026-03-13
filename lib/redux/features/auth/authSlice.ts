@@ -1,5 +1,5 @@
 import clientaxiosinstance from "@/lib/services/clientaxiosinstance";
-import { User } from "@/types/user";
+
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { AxiosError } from "axios";
 import { LoginPayload } from "./types/login-user-payload";

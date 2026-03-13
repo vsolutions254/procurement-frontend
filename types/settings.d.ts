@@ -1,0 +1,21 @@
+type Settings = {
+  language: string;
+  date_format: string;
+  currency: string;
+  timezone: string;
+  show_dashboard_statistics: boolean;
+  show_recent_activity: boolean;
+  show_pending_approvals: boolean;
+  auto_refresh_data: boolean;
+  items_per_page: number;
+  email_notifications: boolean;
+  sms_notifications: boolean;
+  requisition_status_updates: boolean;
+  approval_reminders: boolean;
+  system_alerts: boolean;
+  two_factor_auth: boolean;
+  login_notifications: boolean;
+  new_rfq_notifications: boolean;
+  order_updates: boolean;
+  payment_notifications: boolean;
+};

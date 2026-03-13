@@ -31,7 +31,7 @@ const ProductFilters = () => {
         <Grid gutter="md">
           <Grid.Col span={{ base: 12, md: 6 }}>
             <TextInput
-              placeholder="Search items, suppliers, or categories..."
+              placeholder="Search by product name, supplier name or category name"
               leftSection={<IconSearch size={16} />}
               size="md"
               onChange={(event) => {

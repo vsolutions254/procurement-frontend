@@ -1,5 +1,3 @@
-import { User } from "@/types/user";
-
 export type SuppliersState = {
   suppliers: User[];
   suppliersLoading: boolean;

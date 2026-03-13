@@ -7,4 +7,6 @@ type Service = {
   specifications?: string;
   service_terms?: string;
   sellable: Sellable;
+  created_at: string;
+  updated_at: string;
 };

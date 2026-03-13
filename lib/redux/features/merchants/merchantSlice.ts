@@ -2,7 +2,6 @@ import clientaxiosinstance from "@/lib/services/clientaxiosinstance";
 import { Permission } from "@/types/permission";
 import { Role } from "@/types/role";
 
-import { User } from "@/types/user";
 import { Warehouse } from "@/types/warehouse";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
@@ -209,7 +208,9 @@ export const merchantSlice = createSlice({
       })
       .addCase(deleteWarehouse.fulfilled, (state, action) => {
         state.warehouseLoading = false;
-        state.warehouses = state.warehouses.filter((warehouse) => warehouse.id !== action.payload);
+        state.warehouses = state.warehouses.filter(
+          (warehouse) => warehouse.id !== action.payload,
+        );
         state.warehouseError = null;
       })
       .addCase(deleteWarehouse.rejected, (state, action) => {
@@ -237,7 +238,7 @@ export const fetchPermissions = createAsyncThunk(
     await clientaxiosinstance.get("/sanctum/csrf-cookie");
     const response = await clientaxiosinstance.get("/merchants/permissions");
     return response.data;
-  }
+  },
 );
 
 export const fetchWarehouses = createAsyncThunk(
@@ -246,7 +247,7 @@ export const fetchWarehouses = createAsyncThunk(
     await clientaxiosinstance.get("/sanctum/csrf-cookie");
     const response = await clientaxiosinstance.get("/merchants/warehouses");
     return response.data as Warehouse[];
-  }
+  },
 );
 
 export const editWarehouse = createAsyncThunk(
@@ -256,7 +257,7 @@ export const editWarehouse = createAsyncThunk(
       await clientaxiosinstance.get("/sanctum/csrf-cookie");
       const response = await clientaxiosinstance.put(
         `/merchants/warehouses/${values.id}`,
-        values
+        values,
       );
       return response.data as Warehouse;
     } catch (error: unknown) {
@@ -272,11 +273,11 @@ export const editWarehouse = createAsyncThunk(
         "message" in error.response.data
           ? String(error.response.data.message)
           : error instanceof Error
-          ? error.message
-          : "An error occurred";
+            ? error.message
+            : "An error occurred";
       return rejectWithValue(errorMessage);
     }
-  }
+  },
 );
 
 export const addWarehouse = createAsyncThunk(
@@ -285,10 +286,10 @@ export const addWarehouse = createAsyncThunk(
     await clientaxiosinstance.get("/sanctum/csrf-cookie");
     const response = await clientaxiosinstance.post(
       "/merchants/warehouses",
-      values
+      values,
     );
     return response.data as Warehouse;
-  }
+  },
 );
 
 export const deleteWarehouse = createAsyncThunk(
@@ -311,11 +312,11 @@ export const deleteWarehouse = createAsyncThunk(
         "message" in error.response.data
           ? String(error.response.data.message)
           : error instanceof Error
-          ? error.message
-          : "An error occurred";
+            ? error.message
+            : "An error occurred";
       return rejectWithValue(errorMessage);
     }
-  }
+  },
 );
 
 export const fetchUser = createAsyncThunk(
@@ -324,7 +325,7 @@ export const fetchUser = createAsyncThunk(
     await clientaxiosinstance.get("/sanctum/csrf-cookie");
     const response = await clientaxiosinstance.get(`/merchants/users/${id}`);
     return response.data as User;
-  }
+  },
 );
 
 export const fetchRole = createAsyncThunk(
@@ -333,7 +334,7 @@ export const fetchRole = createAsyncThunk(
     await clientaxiosinstance.get("/sanctum/csrf-cookie");
     const response = await clientaxiosinstance.get(`/merchants/roles/${id}`);
     return response.data as Role;
-  }
+  },
 );
 
 export const addUser = createAsyncThunk(
@@ -342,7 +343,7 @@ export const addUser = createAsyncThunk(
     await clientaxiosinstance.get("/sanctum/csrf-cookie");
     const response = await clientaxiosinstance.post("/merchants/users", values);
     return response.data.user as User;
-  }
+  },
 );
 
 export const editUser = createAsyncThunk(
@@ -352,7 +353,7 @@ export const editUser = createAsyncThunk(
       await clientaxiosinstance.get("/sanctum/csrf-cookie");
       const response = await clientaxiosinstance.post(
         `/merchants/users/${values.id}/edit`,
-        values
+        values,
       );
       return response.data as User;
     } catch (error: unknown) {
@@ -368,11 +369,11 @@ export const editUser = createAsyncThunk(
         "message" in error.response.data
           ? String(error.response.data.message)
           : error instanceof Error
-          ? error.message
-          : "An error occurred";
+            ? error.message
+            : "An error occurred";
       return rejectWithValue(errorMessage);
     }
-  }
+  },
 );
 
 export const deleteUser = createAsyncThunk(
@@ -395,11 +396,11 @@ export const deleteUser = createAsyncThunk(
         "message" in error.response.data
           ? String(error.response.data.message)
           : error instanceof Error
-          ? error.message
-          : "An error occurred";
+            ? error.message
+            : "An error occurred";
       return rejectWithValue(errorMessage);
     }
-  }
+  },
 );
 
 export default merchantSlice.reducer;
