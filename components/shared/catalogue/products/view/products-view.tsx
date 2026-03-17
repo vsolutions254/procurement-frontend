@@ -1,4 +1,4 @@
-import { useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   Button,
   Center,
@@ -9,42 +9,58 @@ import {
   Stack,
   Text,
 } from "@mantine/core";
-import { IconGrid3x3, IconList } from "@tabler/icons-react";
+import { notifications } from "@mantine/notifications";
 import React from "react";
 import ProductGridView from "./grid-view";
 import ProductTableView from "./table-view";
+import { addProductToCart } from "@/lib/redux/features/products/cart/cartSlice";
 
 interface ProductsViewProps {
-  activeTab: string;
   viewMode: "grid" | "list";
   setViewMode: (mode: "grid" | "list") => void;
   pagination: { last_page: number };
 }
 
 const ProductsView = ({
-  activeTab,
   viewMode,
   setViewMode,
   pagination,
 }: ProductsViewProps) => {
-  const { products, productsLoading } = useAppSelector(
+  const dispatch = useAppDispatch();
+  const { productsLoading: productsDisplayLoading } = useAppSelector(
     (state) => state.products,
   );
+
+  const handleAddProductToCart = async (item: CartProduct): Promise<void> => {
+    try {
+      await dispatch(addProductToCart(item)).unwrap();
+      notifications.show({
+        title: "Added to Cart",
+        message: "Item added successfully",
+        color: "green",
+      });
+    } catch (error: unknown) {
+      notifications.show({
+        title: "Cart Error",
+        message: (error as { message?: string })?.message || "Failed to add item to cart",
+        color: "red",
+      });
+    }
+  };
 
   return (
     <Grid.Col span={{ base: 12, md: 9 }}>
       <Stack gap="md">
+        {/* Header: Loading & View Mode */}
         <Group justify="space-between">
           <Text size="sm" c="dimmed">
-            {productsLoading
-              ? "Loading..."
-              : `Showing ${products.length} items`}
+            {productsDisplayLoading ? <Loader size="xs" /> : `Showing products`}
           </Text>
+
           <Group gap="xs">
             <Button
               variant={viewMode === "grid" ? "filled" : "subtle"}
               size="xs"
-              leftSection={<IconGrid3x3 size={14} />}
               onClick={() => setViewMode("grid")}
             >
               Grid
@@ -52,7 +68,6 @@ const ProductsView = ({
             <Button
               variant={viewMode === "list" ? "filled" : "subtle"}
               size="xs"
-              leftSection={<IconList size={14} />}
               onClick={() => setViewMode("list")}
             >
               List
@@ -60,16 +75,22 @@ const ProductsView = ({
           </Group>
         </Group>
 
-        {productsLoading ? (
+        {/* Product List */}
+        {productsDisplayLoading ? (
           <Center py="xl">
             <Loader size="md" />
           </Center>
         ) : viewMode === "grid" ? (
-          <ProductGridView activeTab={activeTab} />
+          <ProductGridView
+            addProductToCart={handleAddProductToCart}
+          />
         ) : (
-          <ProductTableView activeTab={activeTab} />
+          <ProductTableView
+            addProductToCart={handleAddProductToCart}
+          />
         )}
 
+        {/* Pagination */}
         <Group justify="center" mt="xl">
           <Pagination total={pagination.last_page} />
         </Group>

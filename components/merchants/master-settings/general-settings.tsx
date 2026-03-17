@@ -5,7 +5,6 @@ import {
   Button,
   Card,
   Group,
-  NumberInput,
   Select,
   Stack,
   Tabs,

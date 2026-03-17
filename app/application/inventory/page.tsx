@@ -133,7 +133,7 @@ export default function InventoryPage() {
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
-                {products.map((item) => (
+                {products.map((item: Product) => (
                   <Table.Tr key={item.id}>
                     <Table.Td>
                       <div>
@@ -235,7 +235,7 @@ export default function InventoryPage() {
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
-                {services.map((service) => (
+                {services.map((service: service_fields) => (
                   <Table.Tr key={service.id}>
                     <Table.Td>
                       <Text size="sm" fw={600}>
@@ -247,12 +247,12 @@ export default function InventoryPage() {
                     </Table.Td>
                     <Table.Td>
                       <Badge variant="light" size="sm">
-                        {service.category}
+                        {typeof service.category === 'object' ? service.category?.name : service.category}
                       </Badge>
                     </Table.Td>
                     <Table.Td>
                       <Text size="sm">
-                        {service.sellable.suppliers[0].name}
+                        {service.sellable.suppliers[0].company_name}
                       </Text>
                     </Table.Td>
                     <Table.Td>

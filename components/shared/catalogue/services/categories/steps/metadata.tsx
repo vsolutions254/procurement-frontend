@@ -31,7 +31,7 @@ const ServiceCategoryMetadata = ({
   setCategoryImagePreview: (url: string | null) => void;
   categoryImage: File | null;
   handleImageUpload: (file: File | null) => void;
-  editor: any;
+  editor: ReturnType<typeof import('@tiptap/react').useEditor> | null;
   attachments: File[];
   setAttachments: (files: File[]) => void;
 }) => {

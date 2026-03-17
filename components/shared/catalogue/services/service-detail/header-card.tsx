@@ -1,7 +1,8 @@
 import { categoryIcons } from "@/lib/utils/component-constants";
-import { Badge, Box, Card, Group, Text, ThemeIcon } from "@mantine/core";
-import { IconBriefcase } from "@tabler/icons-react";
+import { Badge, Box, Button, Card, Group, Text, ThemeIcon } from "@mantine/core";
+import { IconBriefcase, IconEdit } from "@tabler/icons-react";
 import React from "react";
+import { useRouter } from "next/navigation";
 import { formatCurrency } from "../utils/constants";
 
 const HeaderCard = ({
@@ -25,12 +26,13 @@ const HeaderCard = ({
   tax_amount: number;
   total_price: number;
 }) => {
+  const router = useRouter();
   return (
     <Card withBorder radius="md" padding="lg">
       <Group justify="space-between" align="flex-start" wrap="wrap" gap="md">
         <Group gap="md" align="flex-start" wrap="nowrap">
           <ThemeIcon size={52} radius="md" variant="light" color={color}>
-            {categoryIcons[category.name as any] ?? <IconBriefcase size={26} />}
+            {categoryIcons[category.name] ?? <IconBriefcase size={26} />}
           </ThemeIcon>
           <Box>
             <Group gap="xs" mb={4} wrap="wrap">
@@ -68,6 +70,19 @@ const HeaderCard = ({
               )}
             </Group>
           </Box>
+        </Group>
+
+        <Group gap="sm" align="flex-start">
+          <Button
+            variant="light"
+            size="sm"
+            leftSection={<IconEdit size={14} />}
+            onClick={() =>
+              router.push(`/application/catalogue/services/${service_id}/edit`)
+            }
+          >
+            Edit
+          </Button>
         </Group>
 
         <Box ta={{ base: "left", sm: "right" }}>

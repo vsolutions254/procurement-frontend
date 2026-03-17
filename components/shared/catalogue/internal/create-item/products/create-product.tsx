@@ -34,12 +34,12 @@ const CreateProductForm = ({
   handleImageUpload,
 }: {
   form: UseFormReturnType<CreateProductFormData>;
-  specificationsEditor: any;
+  specificationsEditor: ReturnType<typeof import('@tiptap/react').useEditor> | null;
   setAttachments: (attachments: File[]) => void;
   attachments: File[];
   setImagePreview: (preview: string | null) => void;
   setImageFile: (file: File | null) => void;
-  suppliers: any[];
+  suppliers: User[];
   imagePreview: string | null;
   imageFile: File | null;
   handleImageUpload: (file: File | null) => void;

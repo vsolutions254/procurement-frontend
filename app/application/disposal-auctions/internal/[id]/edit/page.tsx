@@ -1,6 +1,6 @@
 "use client"
 
-import { catalogueItems, disposalAuctions } from "@/lib/utils/constants"
+import { disposalAuctions } from "@/lib/utils/constants"
 import {
   Card,
   Text,
@@ -17,7 +17,10 @@ import {
   Tabs,
   Grid,
   Badge,
+  Loader,
 } from "@mantine/core"
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks"
+import { getProducts } from "@/lib/redux/features/products/productsSlice"
 import { DateInput } from "@mantine/dates"
 import { RichTextEditor } from "@mantine/tiptap"
 import { useEditor } from "@tiptap/react"
@@ -54,7 +57,10 @@ export default function EditAuctionPage({ params }: EditAuctionProps) {
     { id: "ITEM-2", name: "Office Furniture", description: "Desks and chairs", condition: "Good", estimatedValue: 20000 },
   ])
   
+  const dispatch = useAppDispatch()
+  const { products, productsLoading } = useAppSelector((state) => state.products)
   const [modalOpened, setModalOpened] = useState(false)
+  const [internalSearch, setInternalSearch] = useState("")
   const [selectedCatalogueItem, setSelectedCatalogueItem] = useState<string | null>(null)
   const [newItem, setNewItem] = useState({
     name: "",
@@ -86,14 +92,14 @@ export default function EditAuctionPage({ params }: EditAuctionProps) {
         setSelectedCatalogueItem(null)
       }
     } else {
-      const catalogueItem = catalogueItems.find(item => item.id === selectedCatalogueItem)
-      if (catalogueItem) {
+      const product = products.find((p: Product) => String(p.id) === selectedCatalogueItem)
+      if (product) {
         const item: AuctionItem = {
           id: `ITEM-${Date.now()}`,
-          name: catalogueItem.name,
-          description: catalogueItem.description,
+          name: product.name,
+          description: product.description ?? "",
           condition: "Good",
-          estimatedValue: parseFloat(catalogueItem.price.replace(/[^0-9]/g, '')),
+          estimatedValue: Number(product.base_price),
         }
         setItems([...items, item])
         setModalOpened(false)
@@ -190,7 +196,7 @@ export default function EditAuctionPage({ params }: EditAuctionProps) {
           <Card shadow="sm" padding="lg" radius="md" withBorder>
             <Group justify="space-between" mb="md">
               <Title order={4}>Auction Items</Title>
-              <Button leftSection={<IconPlus size={16} />} onClick={() => setModalOpened(true)}>
+              <Button leftSection={<IconPlus size={16} />} onClick={() => { dispatch(getProducts({ page: 1 })); setModalOpened(true); }}>
                 Add Item
               </Button>
             </Group>
@@ -247,9 +253,9 @@ export default function EditAuctionPage({ params }: EditAuctionProps) {
         size="xl"
         centered
       >
-        <Tabs value={selectedCatalogueItem === null ? 'new' : 'internal'} onChange={(value) => {
-          if (value === 'new') setSelectedCatalogueItem(null);
-          else setSelectedCatalogueItem('existing');
+        <Tabs defaultValue="new" onChange={(value) => {
+          if (value === 'internal') dispatch(getProducts({ page: 1 }));
+          setSelectedCatalogueItem(null);
         }}>
           <Tabs.List>
             <Tabs.Tab value="new">Add New Item</Tabs.Tab>
@@ -314,6 +320,8 @@ export default function EditAuctionPage({ params }: EditAuctionProps) {
                 placeholder="Search inventory items..."
                 leftSection={<IconSearch size={16} />}
                 mb="md"
+                value={internalSearch}
+                onChange={(e) => setInternalSearch(e.currentTarget.value)}
               />
               
               <Table highlightOnHover>
@@ -322,30 +330,28 @@ export default function EditAuctionPage({ params }: EditAuctionProps) {
                     <Table.Th>Item</Table.Th>
                     <Table.Th>Category</Table.Th>
                     <Table.Th>Price</Table.Th>
-                    <Table.Th>Status</Table.Th>
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
-                  {catalogueItems.map((item) => (
-                    <Table.Tr 
-                      key={item.id} 
-                      style={{ cursor: 'pointer', backgroundColor: selectedCatalogueItem === item.id ? 'var(--mantine-color-blue-0)' : undefined }}
-                      onClick={() => setSelectedCatalogueItem(item.id)}
+                  {productsLoading ? (
+                    <Table.Tr><Table.Td colSpan={3}><Group justify="center" py="md"><Loader size="sm" /></Group></Table.Td></Table.Tr>
+                  ) : products
+                    .filter((p: Product) => p.name.toLowerCase().includes(internalSearch.toLowerCase()))
+                    .map((p: Product) => (
+                    <Table.Tr
+                      key={p.id}
+                      style={{ cursor: 'pointer', backgroundColor: selectedCatalogueItem === String(p.id) ? 'var(--mantine-color-blue-0)' : undefined }}
+                      onClick={() => setSelectedCatalogueItem(String(p.id))}
                     >
                       <Table.Td>
-                        <Text fw={500} size="sm">{item.name}</Text>
-                        <Text size="xs" c="dimmed">{item.id}</Text>
+                        <Text fw={500} size="sm">{p.name}</Text>
+                        <Text size="xs" c="dimmed">{p.id}</Text>
                       </Table.Td>
                       <Table.Td>
-                        <Badge variant="light" size="sm">{item.category}</Badge>
+                        <Badge variant="light" size="sm">{p.category?.name}</Badge>
                       </Table.Td>
                       <Table.Td>
-                        <Text size="sm" fw={600} c="cyan">{item.price}</Text>
-                      </Table.Td>
-                      <Table.Td>
-                        <Badge variant="light" color={item.inStock ? "green" : "red"}>
-                          {item.inStock ? "In Stock" : "Out of Stock"}
-                        </Badge>
+                        <Text size="sm" fw={600} c="cyan">KES {Number(p.base_price).toLocaleString()}</Text>
                       </Table.Td>
                     </Table.Tr>
                   ))}
@@ -362,8 +368,7 @@ export default function EditAuctionPage({ params }: EditAuctionProps) {
           <Button 
             onClick={addItem} 
             disabled={
-              selectedCatalogueItem === 'existing' || 
-              (selectedCatalogueItem === null && (!newItem.name || !newItem.estimatedValue))
+              selectedCatalogueItem === null && (!newItem.name || !newItem.estimatedValue)
             }
           >
             Add Item

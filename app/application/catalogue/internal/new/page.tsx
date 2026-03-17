@@ -164,9 +164,11 @@ export default function NewInternalCatalogItem() {
         submitData.append("image", imageFile);
       }
 
-      await dispatch(
-        isProduct ? addProduct(submitData) : addService(submitData),
-      ).unwrap();
+      if (isProduct) {
+        await dispatch(addProduct(submitData)).unwrap();
+      } else {
+        await dispatch(addService(submitData)).unwrap();
+      }
       notifications.show({
         title: "Success",
         message: `${isProduct ? "Product" : "Service"} created successfully`,

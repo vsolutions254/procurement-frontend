@@ -1,18 +1,10 @@
 "use client";
 
 import {
-  Card,
-  Text,
-  Group,
-  Button,
   Stack,
+  Text,
   Title,
-  TextInput,
-  Select,
-  NumberInput,
   Tabs,
-  Table,
-  Badge,
 } from "@mantine/core";
 import { useEditor } from "@tiptap/react";
 import Highlight from "@tiptap/extension-highlight";

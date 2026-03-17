@@ -152,7 +152,7 @@ export const getStockStatusConfig = (status: string) => {
 };
 
 export function objectToFormData(
-  obj: Record<string, any>,
+  obj: Record<string, unknown>,
   form: FormData = new FormData(),
   namespace?: string,
 ): FormData {
@@ -171,13 +171,13 @@ export function objectToFormData(
 
     if (Array.isArray(value)) {
       value.forEach((item, index) => {
-        objectToFormData(item, form, `${formKey}[${index}]`);
+        objectToFormData(item as Record<string, unknown>, form, `${formKey}[${index}]`);
       });
       return;
     }
 
     if (typeof value === "object") {
-      objectToFormData(value, form, formKey);
+      objectToFormData(value as Record<string, unknown>, form, formKey);
       return;
     }
 
@@ -185,4 +185,13 @@ export function objectToFormData(
   });
 
   return form;
+}
+
+export function resolveImageUrl(path: string | null | undefined): string {
+  if (!path) return "/placeholder.svg";
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
+  const base =
+    process.env.NEXT_PUBLIC_BACKEND_API_URL?.replace(/\/$/, "") ??
+    "http://localhost:8000";
+  return `${base}/storage/${path.replace(/^storage\//, "")}`;
 }

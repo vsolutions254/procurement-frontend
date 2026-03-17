@@ -1,5 +1,5 @@
 import { fetchCategories } from "@/lib/redux/features/products/categories/categoriesSlice";
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import {
   Accordion,
   Card,

@@ -181,7 +181,7 @@ export default function ServiceDetailPage() {
 
   useEffect(() => {
     dispatch(getService(id));
-  }, [dispatch]);
+  }, [dispatch, id]);
 
   if (serviceLoading) {
     return (
@@ -213,7 +213,7 @@ export default function ServiceDetailPage() {
     );
   }
 
-  const color = categoryColors[service.category as any] ?? "blue";
+  const color = categoryColors[service.category?.name] ?? "blue";
   const taxAmount = computeTax(service);
   const totalPrice = computeTotal(service);
   const primarySupplier = service.sellable.suppliers[0];
@@ -227,7 +227,7 @@ export default function ServiceDetailPage() {
       <BreadCrumbs service_name={service.name} />
 
       <HeaderCard
-        category={service.category}
+        category={service.category as unknown as Category}
         color={color}
         service_name={service.name}
         service_id={service.id}
@@ -404,7 +404,7 @@ export default function ServiceDetailPage() {
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
-                  {service.sellable.suppliers.map((supplier, index) => (
+                  {service.sellable.suppliers.map((supplier: User, index: number) => (
                     <Table.Tr key={supplier.id}>
                       <Table.Td>
                         <Group gap="sm" wrap="nowrap">

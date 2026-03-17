@@ -39,12 +39,10 @@ export default function InternalCatalogPage() {
   >(null);
   const dispatch = useAppDispatch();
 
-  const { products, pagination } = useAppSelector((state) => state.products);
-  const { services } = useAppSelector((state) => state.services);
-  const { categories } = useAppSelector((state) => state.product_categories);
-  const { categories: serviceCategories } = useAppSelector(
-    (state) => state.service_categories,
-  );
+  const { pagination } = useAppSelector((state) => state.products);
+  useAppSelector((state) => state.services);
+  useAppSelector((state) => state.product_categories);
+  useAppSelector((state) => state.service_categories);
 
   useEffect(() => {
     dispatch(getProducts({ page: 1 }));
@@ -53,9 +51,7 @@ export default function InternalCatalogPage() {
     dispatch(getServices({ page: 1 }));
   }, [dispatch]);
 
-  const currentItems = activeTab === "inventory" ? products || [] : services;
-  const currentCategories =
-    activeTab === "inventory" ? categories : serviceCategories;
+
 
   const handleApproveRecommendation = (id: string) => {
     console.log("Approving recommendation:", id);
@@ -93,7 +89,6 @@ export default function InternalCatalogPage() {
             <ProductsView
               viewMode={viewMode}
               setViewMode={setViewMode}
-              activeTab={activeTab!}
               pagination={pagination}
             />
           )}

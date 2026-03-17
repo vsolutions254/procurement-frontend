@@ -1,5 +1,3 @@
-import { Product } from "@/types/product";
-
 type ProductsState = {
   products: Product[];
   productsLoading: boolean;

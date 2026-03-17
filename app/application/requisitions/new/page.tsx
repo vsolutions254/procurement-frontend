@@ -1,6 +1,5 @@
 "use client";
 
-import { cartItems, nonTangibleCartItems } from "@/lib/utils/constants";
 import {
   Card,
   Text,
@@ -43,25 +42,130 @@ import {
   IconPackage,
   IconPlane,
 } from "@tabler/icons-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import {
+  getCartProducts,
+  getCartProduct,
+  removeCartProduct,
+  updateCartProductQuantity,
+  addProductToCart,
+} from "@/lib/redux/features/products/cart/cartSlice";
+import {
+  getCartServices,
+  getCartService,
+  removeCartService,
+  updateCartServiceQuantity,
+  addServiceToCart,
+  updateCartService,
+} from "@/lib/redux/features/services/cart/cartSlice";
+import { getProducts } from "@/lib/redux/features/products/productsSlice";
+import { getServices } from "@/lib/redux/features/services/servicesSlice";
+import {
+  computeTax,
+  computeTotal,
+  formatCurrency,
+} from "@/components/shared/catalogue/services/utils/constants";
+import CustomFieldsForm from "@/components/shared/catalogue/custom-fields-form";
+
+type RequisitionItem = {
+  id: string;
+  name: string;
+  quantity: number;
+  price: number;
+  category?: string;
+  description?: string;
+  isNew?: boolean;
+  addToCatalogue?: boolean;
+};
 
 export default function CheckoutPage() {
+  const { products: cartProducts, productDetails } = useAppSelector(
+    (state) => state.products_cart,
+  );
+  const {
+    services: cartServices,
+    serviceDetails,
+    servicesLoading,
+  } = useAppSelector((state) => state.services_cart);
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(getCartProducts());
+    dispatch(getCartServices());
+  }, [dispatch]);
+
+  useEffect(() => {
+    cartProducts.forEach((item) => {
+      if (!productDetails[item.product_id]) {
+        dispatch(getCartProduct(item.product_id));
+      }
+    });
+  }, [cartProducts, dispatch, productDetails]);
+
+  useEffect(() => {
+    cartServices.forEach((item) => {
+      if (!serviceDetails[item.service_id]) {
+        dispatch(getCartService(item.service_id));
+      }
+    });
+  }, [cartServices, dispatch, serviceDetails]);
+
+  useEffect(() => {
+    const productItems = cartProducts.map((item) => {
+      const product = productDetails[item.product_id];
+      return {
+        id: `product-${item.product_id}`,
+        name: product?.name ?? `Product #${item.product_id}`,
+        quantity: item.quantity,
+        price: product ? Number(product.base_price) : 0,
+        category: "Product",
+      };
+    });
+    const serviceItems = cartServices.map((item) => {
+      const service = serviceDetails[item.service_id];
+      return {
+        id: `service-${item.service_id}`,
+        name: service?.name ?? `Service #${item.service_id}`,
+        quantity: item.quantity,
+        price: service ? Number(service.base_price) : 0,
+        category: "Service",
+        custom_values: item.custom_values,
+      };
+    });
+    setItems([...productItems, ...serviceItems]);
+  }, [cartProducts, cartServices, productDetails, serviceDetails]);
+
+  const { products: catalogueProducts, productsLoading: catalogueProductsLoading } = useAppSelector(
+    (state) => state.products,
+  );
+  const { services: catalogueServices, servicesLoading: catalogueServicesLoading } = useAppSelector(
+    (state) => state.services,
+  );
+
+  const [internalSearch, setInternalSearch] = useState("");
+  const [selectedInternalItem, setSelectedInternalItem] = useState<{ id: number; type: "product" | "service" } | null>(null);
+  const [customFieldValues, setCustomFieldValues] = useState<Record<string, CustomFieldValueType>>({});
+  const [activeModalTab, setActiveModalTab] = useState<string | null>("new");
+
   const [active, setActive] = useState(0);
   const [selectedReceiver, setSelectedReceiver] = useState<string | null>(null);
-  // For testing single service - uncomment one of these lines:
-  // const [items, setItems] = useState([{ ...nonTangibleCartItems[0], price: 15000 }]); // Flight only
-  // const [items, setItems] = useState([{ ...nonTangibleCartItems[1], price: 12000 }]); // Hotel only
-  // const [items, setItems] = useState([{ ...nonTangibleCartItems[2], price: 8000 }]); // Car only
 
-  // Normal state (comment out for testing):
-  const [items, setItems] = useState([
-    ...cartItems,
-    ...nonTangibleCartItems.map((item) => ({
-      ...item,
-      price: typeof item.price === "number" ? item.price : 15000,
-    })),
-  ]);
+  const [items, setItems] = useState<RequisitionItem[]>([]);
+
   const [addItemModalOpen, setAddItemModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (addItemModalOpen) {
+      dispatch(getProducts({ page: 1 }));
+      dispatch(getServices({ page: 1 }));
+      setSelectedInternalItem(null);
+      setCustomFieldValues({});
+      setInternalSearch("");
+      setItemQuantity(1);
+      setActiveModalTab("new");
+    }
+  }, [addItemModalOpen, dispatch]);
   const [selectedCatalogueItem, setSelectedCatalogueItem] = useState<
     string | null
   >(null);
@@ -93,6 +197,7 @@ export default function CheckoutPage() {
       setNewItemForm((prev) => ({ ...prev, specifications: editor.getHTML() }));
     },
   });
+
   const [itemType, setItemType] = useState<string | null>("goods");
   const [useCustomDelivery, setUseCustomDelivery] = useState(false);
 
@@ -128,66 +233,98 @@ export default function CheckoutPage() {
     { value: "PROJ-2025-005", label: "Employee Wellness Program" },
   ];
 
-  const catalogueItems = [
-    {
-      value: "CAT-001",
-      label: "Ergonomic Office Chair",
-      price: 38999,
-      category: "Furniture",
-      image: "/ergonomic-office-chair.png",
-      inStock: true,
-    },
-    {
-      value: "CAT-002",
-      label: "Laptop - Dell XPS 15",
-      price: 194999,
-      category: "IT Equipment",
-      image: "/modern-laptop.png",
-      inStock: true,
-    },
-    {
-      value: "CAT-003",
-      label: "Printer Paper (500 sheets)",
-      price: 1689,
-      category: "Office Supplies",
-      image: "/printer-paper.jpg",
-      inStock: true,
-    },
-    {
-      value: "CAT-004",
-      label: "Standing Desk",
-      price: 77999,
-      category: "Furniture",
-      image: "/standing-desk-setup.png",
-      inStock: false,
-    },
-    {
-      value: "CAT-005",
-      label: "Wireless Mouse",
-      price: 3899,
-      category: "IT Equipment",
-      image: "/wireless-mouse.png",
-      inStock: true,
-    },
-  ];
-
   const selectedUser = users.find((user) => user.value === selectedReceiver);
 
-  const updateItemQuantity = (id: string, quantity: number) => {
+  const updateItemQuantity = async (id: string, quantity: number) => {
+    // Update local state immediately for UI responsiveness
     setItems(
       items.map((item) => (item.id === id ? { ...item, quantity } : item)),
     );
+
+    // Also update the global cart state
+    try {
+      if (id.startsWith("product-")) {
+        const productId = parseInt(id.replace("product-", ""));
+        await dispatch(
+          updateCartProductQuantity({
+            product_id: productId,
+            quantity,
+          }),
+        ).unwrap();
+      } else if (id.startsWith("service-")) {
+        const serviceId = parseInt(id.replace("service-", ""));
+        await dispatch(
+          updateCartServiceQuantity({
+            service_id: serviceId,
+            quantity,
+          }),
+        ).unwrap();
+      }
+    } catch (error) {
+      // If the API call fails, revert the local state change
+      setItems(
+        items.map((item) =>
+          item.id === id ? { ...item, quantity: item.quantity } : item,
+        ),
+      );
+      console.error("Failed to update cart quantity:", error);
+    }
   };
 
-  const removeItem = (id: string) => {
+  const removeItem = async (id: string) => {
+    // Update local state immediately for UI responsiveness
     setItems(items.filter((item) => item.id !== id));
+
+    // Also update the global cart state
+    try {
+      if (id.startsWith("product-")) {
+        const productId = parseInt(id.replace("product-", ""));
+        await dispatch(removeCartProduct(productId)).unwrap();
+      } else if (id.startsWith("service-")) {
+        const serviceId = parseInt(id.replace("service-", ""));
+        await dispatch(removeCartService(serviceId)).unwrap();
+      }
+    } catch (error) {
+      // If the API call fails, revert the local state change
+      // Note: This is complex to revert, so we'll just log the error for now
+      console.error("Failed to remove item from cart:", error);
+    }
   };
 
-  const addItem = () => {
+  const [addItemLoading, setAddItemLoading] = useState(false);
+  const [editServiceModalOpen, setEditServiceModalOpen] = useState(false);
+  const [editingService, setEditingService] = useState<CartService | null>(null);
+  const [editServiceQuantity, setEditServiceQuantity] = useState(1);
+  const [editServiceFormData, setEditServiceFormData] = useState<Record<string, CustomFieldValueType>>({});
+  const [editServiceLoading, setEditServiceLoading] = useState(false);
+
+  const addItem = async () => {
+    if (selectedInternalItem !== null) {
+      setAddItemLoading(true);
+      try {
+        if (selectedInternalItem.type === "product") {
+          await dispatch(addProductToCart({ product_id: selectedInternalItem.id, quantity: itemQuantity })).unwrap();
+          await dispatch(getCartProduct(selectedInternalItem.id));
+        } else {
+          const custom_values: CustomFieldValue[] = Object.entries(customFieldValues)
+            .filter(([, v]) => v !== "" && v !== null && v !== undefined)
+            .map(([field_id, value]) => ({ field_id, value }));
+          await dispatch(addServiceToCart({ service_id: selectedInternalItem.id, quantity: itemQuantity, custom_values })).unwrap();
+          await dispatch(getCartService(selectedInternalItem.id));
+        }
+        setAddItemModalOpen(false);
+        setSelectedInternalItem(null);
+        setCustomFieldValues({});
+        setItemQuantity(1);
+      } finally {
+        setAddItemLoading(false);
+      }
+      return;
+    }
+
     if (selectedCatalogueItem === null) {
-      // Adding new item
       if (newItemForm.name && newItemForm.category && newItemForm.price > 0) {
-        const newItem = {
+        const newItem: RequisitionItem = {
           id: `NEW-${Date.now()}`,
           name: newItemForm.name,
           quantity: itemQuantity,
@@ -201,43 +338,36 @@ export default function CheckoutPage() {
         setAddItemModalOpen(false);
         setSelectedCatalogueItem(null);
         setItemQuantity(1);
-        setNewItemForm({
-          name: "",
-          category: "",
-          price: 0,
-          description: "",
-          specifications: "",
-          addToCatalogue: false,
-        });
+        setNewItemForm({ name: "", category: "", price: 0, description: "", specifications: "", addToCatalogue: false });
         setModalAttachments([]);
         setItemType("goods");
-      }
-    } else {
-      // Adding from catalogue
-      const catalogueItem = catalogueItems.find(
-        (item) => item.value === selectedCatalogueItem,
-      );
-      if (catalogueItem) {
-        const newItem = {
-          id: catalogueItem.value,
-          name: catalogueItem.label,
-          quantity: itemQuantity,
-          price: catalogueItem.price,
-        };
-        setItems([...items, newItem]);
-        setAddItemModalOpen(false);
-        setSelectedCatalogueItem(null);
-        setItemQuantity(1);
       }
     }
   };
 
-  const subtotal = items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0,
-  );
-  const tax = subtotal * 0.1;
-  const total = subtotal + tax;
+  const subtotal = [
+    ...cartProducts.map((item) => {
+      const p = productDetails[item.product_id];
+      return p ? computeTotal(p) * item.quantity : 0;
+    }),
+    ...cartServices.map((item) => {
+      const s = serviceDetails[item.service_id];
+      return s ? computeTotal(s) * item.quantity : 0;
+    }),
+  ].reduce((a, b) => a + b, 0);
+
+  const tax = [
+    ...cartProducts.map((item) => {
+      const p = productDetails[item.product_id];
+      return p ? computeTax(p) * item.quantity : 0;
+    }),
+    ...cartServices.map((item) => {
+      const s = serviceDetails[item.service_id];
+      return s ? computeTax(s) * item.quantity : 0;
+    }),
+  ].reduce((a, b) => a + b, 0);
+
+  const total = subtotal;
 
   return (
     <Stack gap="lg">
@@ -678,82 +808,211 @@ export default function CheckoutPage() {
                       </Paper>
                     );
                   })()}
+
                 {!viewingService && (
-                  <Table>
-                    <Table.Thead>
-                      <Table.Tr>
-                        <Table.Th>Item</Table.Th>
-                        <Table.Th>Quantity</Table.Th>
-                        <Table.Th>Unit Price</Table.Th>
-                        <Table.Th>Total</Table.Th>
-                        <Table.Th>Actions</Table.Th>
-                      </Table.Tr>
-                    </Table.Thead>
-                    <Table.Tbody>
-                      {items.map((item) => (
-                        <Table.Tr key={item.id}>
-                          <Table.Td>
-                            <div
-                              style={{
-                                cursor: item.id.startsWith("SRV-")
-                                  ? "pointer"
-                                  : "default",
-                              }}
-                              onClick={() =>
-                                item.id.startsWith("SRV-") &&
-                                setViewingService(item.id)
-                              }
-                            >
-                              <Text size="sm" fw={500}>
-                                {item.name}
-                              </Text>
-                              <Text size="xs" c="dimmed">
-                                {item.id}
-                              </Text>
-                              {item.id.startsWith("SRV-") && (
-                                <Badge
-                                  size="xs"
-                                  variant="light"
-                                  color="blue"
-                                  mt={2}
+                  <Tabs defaultValue="products">
+                    <Tabs.List mb="md">
+                      <Tabs.Tab value="products" leftSection={<IconPackage size={14} />}>
+                        Products ({cartProducts.length})
+                      </Tabs.Tab>
+                      <Tabs.Tab value="services" leftSection={<IconPlane size={14} />}>
+                        Services ({cartServices.length})
+                      </Tabs.Tab>
+                      <Tabs.Tab value="recommended" leftSection={<IconSearch size={14} />}>
+                        Recommended Items
+                      </Tabs.Tab>
+                    </Tabs.List>
+
+                    <Tabs.Panel value="products">
+                      {servicesLoading ? (
+                        <Group justify="center" p="md"><Loader size="sm" /></Group>
+                      ) : cartProducts.length === 0 ? (
+                        <Text c="dimmed" size="sm" ta="center" py="md">No products in cart.</Text>
+                      ) : (
+                        <Table>
+                          <Table.Thead>
+                            <Table.Tr>
+                              <Table.Th>Item</Table.Th>
+                              <Table.Th>Qty</Table.Th>
+                              <Table.Th>Unit Price</Table.Th>
+                              <Table.Th>Tax</Table.Th>
+                              <Table.Th>Total</Table.Th>
+                              <Table.Th></Table.Th>
+                            </Table.Tr>
+                          </Table.Thead>
+                          <Table.Tbody>
+                            {cartProducts.map((raw) => {
+                              const p = productDetails[raw.product_id];
+                              const id = `product-${raw.product_id}`;
+                              const base = p ? Number(p.base_price) : 0;
+                              const taxAmt = p ? computeTax(p) : 0;
+                              const lineTotal = p ? computeTotal(p) * raw.quantity : 0;
+                              const isInclusive = p?.sellable?.tax_type === "inclusive";
+                              const isTaxable = p?.sellable?.tax_status === "taxable" && taxAmt > 0;
+                              return (
+                                <Table.Tr key={id}>
+                                  <Table.Td>
+                                    <Text size="sm" fw={500}>{p?.name ?? `Product #${raw.product_id}`}</Text>
+                                    <Text size="xs" c="dimmed">{p?.category?.name}</Text>
+                                  </Table.Td>
+                                  <Table.Td>
+                                    <NumberInput
+                                      value={raw.quantity}
+                                      onChange={(v) => updateItemQuantity(id, Number(v) || 1)}
+                                      min={1} max={99} size="xs" w={80}
+                                    />
+                                  </Table.Td>
+                                  <Table.Td>{formatCurrency(base)}</Table.Td>
+                                  <Table.Td>
+                                    {isTaxable ? (
+                                      <Stack gap={2}>
+                                        <Text size="xs" fw={500}>{formatCurrency(taxAmt * raw.quantity)}</Text>
+                                        <Badge size="xs" variant="dot" color={isInclusive ? "teal" : "orange"}>
+                                          {isInclusive ? "Inclusive" : "Exclusive"}
+                                        </Badge>
+                                      </Stack>
+                                    ) : (
+                                      <Text size="xs" c="dimmed">—</Text>
+                                    )}
+                                  </Table.Td>
+                                  <Table.Td fw={600}>{formatCurrency(lineTotal)}</Table.Td>
+                                  <Table.Td>
+                                    <ActionIcon color="red" variant="subtle" onClick={() => removeItem(id)}>
+                                      <IconTrash size={16} />
+                                    </ActionIcon>
+                                  </Table.Td>
+                                </Table.Tr>
+                              );
+                            })}
+                          </Table.Tbody>
+                        </Table>
+                      )}
+                    </Tabs.Panel>
+
+                    <Tabs.Panel value="services">
+                      {servicesLoading ? (
+                        <Group justify="center" p="md"><Loader size="sm" /></Group>
+                      ) : cartServices.length === 0 ? (
+                        <Text c="dimmed" size="sm" ta="center" py="md">No services in cart.</Text>
+                      ) : (
+                        <Table>
+                          <Table.Thead>
+                            <Table.Tr>
+                              <Table.Th>Service</Table.Th>
+                              <Table.Th>Qty</Table.Th>
+                              <Table.Th>Unit Price</Table.Th>
+                              <Table.Th>Tax</Table.Th>
+                              <Table.Th>Total</Table.Th>
+                              <Table.Th></Table.Th>
+                            </Table.Tr>
+                          </Table.Thead>
+                          <Table.Tbody>
+                            {cartServices.map((raw) => {
+                              const s = serviceDetails[raw.service_id];
+                              const id = `service-${raw.service_id}`;
+                              const base = s ? Number(s.base_price) : 0;
+                              const taxAmt = s ? computeTax(s) : 0;
+                              const lineTotal = s ? computeTotal(s) * raw.quantity : 0;
+                              const isInclusive = s?.sellable?.tax_type === "inclusive";
+                              const isTaxable = s?.sellable?.tax_status === "taxable" && taxAmt > 0;
+                              const hasCustomFields = (s?.category?.custom_fields?.length ?? 0) > 0;
+                              return (
+                                <Table.Tr
+                                  key={id}
+                                  style={{ cursor: hasCustomFields ? "pointer" : undefined }}
+                                  onClick={() => {
+                                    if (!s || !hasCustomFields) return;
+                                    setEditingService({ service: s, quantity: raw.quantity, custom_values: raw.custom_values ?? [] });
+                                    setEditServiceQuantity(raw.quantity);
+                                    const record: Record<string, CustomFieldValueType> = {};
+                                    (raw.custom_values ?? []).forEach(({ field_id, value }) => { record[field_id] = value; });
+                                    setEditServiceFormData(record);
+                                    setEditServiceModalOpen(true);
+                                  }}
                                 >
-                                  Service - Click to view details
-                                </Badge>
-                              )}
-                            </div>
-                          </Table.Td>
-                          <Table.Td>
-                            <NumberInput
-                              value={item.quantity}
-                              onChange={(value) =>
-                                updateItemQuantity(
-                                  item.id,
-                                  typeof value === "number" ? value : 1,
-                                )
-                              }
-                              min={1}
-                              max={99}
-                              size="xs"
-                              w={80}
-                            />
-                          </Table.Td>
-                          <Table.Td>KES {item.price.toLocaleString()}</Table.Td>
-                          <Table.Td fw={600}>
-                            KES {(item.price * item.quantity).toLocaleString()}
-                          </Table.Td>
-                          <Table.Td>
-                            <ActionIcon
-                              color="red"
-                              variant="subtle"
-                              onClick={() => removeItem(item.id)}
-                            >
-                              <IconTrash size={16} />
-                            </ActionIcon>
-                          </Table.Td>
-                        </Table.Tr>
-                      ))}
-                    </Table.Tbody>
-                  </Table>
+                                  <Table.Td>
+                                    <Text size="sm" fw={500}>{s?.name ?? `Service #${raw.service_id}`}</Text>
+                                    <Group gap={4} mt={2}>
+                                      <Text size="xs" c="dimmed">{s?.category?.name}</Text>
+                                      {hasCustomFields && (
+                                        <Badge size="xs" variant="light" color="blue">Click to edit</Badge>
+                                      )}
+                                    </Group>
+                                  </Table.Td>
+                                  <Table.Td>
+                                    <NumberInput
+                                      value={raw.quantity}
+                                      onChange={(v) => updateItemQuantity(id, Number(v) || 1)}
+                                      min={1} max={99} size="xs" w={80}
+                                      onClick={(e) => e.stopPropagation()}
+                                    />
+                                  </Table.Td>
+                                  <Table.Td>{formatCurrency(base)}</Table.Td>
+                                  <Table.Td>
+                                    {isTaxable ? (
+                                      <Stack gap={2}>
+                                        <Text size="xs" fw={500}>{formatCurrency(taxAmt * raw.quantity)}</Text>
+                                        <Badge size="xs" variant="dot" color={isInclusive ? "teal" : "orange"}>
+                                          {isInclusive ? "Inclusive" : "Exclusive"}
+                                        </Badge>
+                                      </Stack>
+                                    ) : (
+                                      <Text size="xs" c="dimmed">—</Text>
+                                    )}
+                                  </Table.Td>
+                                  <Table.Td fw={600}>{formatCurrency(lineTotal)}</Table.Td>
+                                  <Table.Td>
+                                    <ActionIcon color="red" variant="subtle" onClick={(e) => { e.stopPropagation(); removeItem(id); }}>
+                                      <IconTrash size={16} />
+                                    </ActionIcon>
+                                  </Table.Td>
+                                </Table.Tr>
+                              );
+                            })}
+                          </Table.Tbody>
+                        </Table>
+                      )}
+                    </Tabs.Panel>
+
+                    <Tabs.Panel value="recommended">
+                      <Table highlightOnHover>
+                        <Table.Thead>
+                          <Table.Tr>
+                            <Table.Th>Item</Table.Th>
+                            <Table.Th>Category</Table.Th>
+                            <Table.Th>Price</Table.Th>
+                            <Table.Th></Table.Th>
+                          </Table.Tr>
+                        </Table.Thead>
+                        <Table.Tbody>
+                          {[
+                            { id: "REC-001", name: "Wireless Keyboard", category: "IT Equipment", price: 4500 },
+                            { id: "REC-002", name: "USB-C Hub", category: "IT Equipment", price: 3200 },
+                            { id: "REC-003", name: "Desk Organizer Set", category: "Office Supplies", price: 1800 },
+                            { id: "REC-004", name: "Monitor Stand", category: "Furniture", price: 6500 },
+                          ].map((rec) => (
+                            <Table.Tr key={rec.id}>
+                              <Table.Td>
+                                <Text size="sm" fw={500}>{rec.name}</Text>
+                                <Text size="xs" c="dimmed">{rec.id}</Text>
+                              </Table.Td>
+                              <Table.Td>
+                                <Badge variant="light" size="sm">{rec.category}</Badge>
+                              </Table.Td>
+                              <Table.Td>
+                                <Text size="sm" fw={600} c="cyan">{formatCurrency(rec.price)}</Text>
+                              </Table.Td>
+                              <Table.Td>
+                                <Button size="xs" variant="light" leftSection={<IconPlus size={12} />}>
+                                  Add
+                                </Button>
+                              </Table.Td>
+                            </Table.Tr>
+                          ))}
+                        </Table.Tbody>
+                      </Table>
+                    </Tabs.Panel>
+                  </Tabs>
                 )}
 
                 {!viewingService && (
@@ -763,13 +1022,13 @@ export default function CheckoutPage() {
                       <Group justify="space-between">
                         <Text size="sm">Subtotal</Text>
                         <Text size="sm" fw={500}>
-                          KES {subtotal.toLocaleString()}
+                          {formatCurrency(subtotal)}
                         </Text>
                       </Group>
                       <Group justify="space-between">
-                        <Text size="sm">Tax (10%)</Text>
+                        <Text size="sm">Tax</Text>
                         <Text size="sm" fw={500}>
-                          KES {tax.toLocaleString()}
+                          {formatCurrency(tax)}
                         </Text>
                       </Group>
                       <Divider />
@@ -778,7 +1037,7 @@ export default function CheckoutPage() {
                           Total
                         </Text>
                         <Text size="lg" fw={700} c="cyan">
-                          KES {total.toLocaleString()}
+                          {formatCurrency(total)}
                         </Text>
                       </Group>
                     </Stack>
@@ -854,6 +1113,60 @@ export default function CheckoutPage() {
       </Card>
 
       <Modal
+        opened={editServiceModalOpen}
+        onClose={() => setEditServiceModalOpen(false)}
+        title={`Edit Service - ${editingService?.service.name}`}
+        size="lg"
+        centered
+      >
+        {editingService && (
+          <Stack gap="md">
+            <NumberInput
+              label="Quantity"
+              min={1}
+              max={100}
+              value={editServiceQuantity}
+              onChange={(v) => setEditServiceQuantity(Number(v) || 1)}
+            />
+            {(editingService.service.category.custom_fields?.length ?? 0) > 0 && (
+              <>
+                <Divider label="Service Details" labelPosition="left" />
+                <CustomFieldsForm
+                  customFields={editingService.service.category.custom_fields!}
+                  formData={editServiceFormData}
+                  setFormData={setEditServiceFormData}
+                />
+              </>
+            )}
+            <Group justify="flex-end" mt="md">
+              <Button variant="outline" onClick={() => setEditServiceModalOpen(false)}>Cancel</Button>
+              <Button
+                loading={editServiceLoading}
+                onClick={async () => {
+                  setEditServiceLoading(true);
+                  try {
+                    const custom_values: CustomFieldValue[] = Object.entries(editServiceFormData)
+                      .filter(([, v]) => v !== "" && v !== null && v !== undefined)
+                      .map(([field_id, value]) => ({ field_id, value }));
+                    await dispatch(updateCartService({
+                      service_id: editingService.service.id,
+                      quantity: editServiceQuantity,
+                      custom_values,
+                    })).unwrap();
+                    setEditServiceModalOpen(false);
+                  } finally {
+                    setEditServiceLoading(false);
+                  }
+                }}
+              >
+                Save
+              </Button>
+            </Group>
+          </Stack>
+        )}
+      </Modal>
+
+      <Modal
         opened={addItemModalOpen}
         onClose={() => setAddItemModalOpen(false)}
         title="Add Item"
@@ -861,18 +1174,11 @@ export default function CheckoutPage() {
         centered
       >
         <Tabs
-          value={
-            selectedCatalogueItem === null
-              ? "new"
-              : selectedCatalogueItem === "suppliers"
-                ? "suppliers"
-                : "internal"
-          }
+          value={activeModalTab}
           onChange={(value) => {
-            if (value === "new") setSelectedCatalogueItem(null);
-            else if (value === "suppliers")
-              setSelectedCatalogueItem("suppliers");
-            else setSelectedCatalogueItem("existing");
+            setActiveModalTab(value);
+            setSelectedInternalItem(null);
+            setSelectedCatalogueItem(value === "suppliers" ? "suppliers" : null);
           }}
         >
           <Tabs.List>
@@ -940,7 +1246,7 @@ export default function CheckoutPage() {
                         onChange={(value) =>
                           setNewItemForm({
                             ...newItemForm,
-                            price: typeof value === "number" ? value : 0,
+                            price: Number(value) || 0,
                           })
                         }
                         required
@@ -951,7 +1257,7 @@ export default function CheckoutPage() {
                         label="Quantity"
                         value={itemQuantity}
                         onChange={(value) =>
-                          setItemQuantity(typeof value === "number" ? value : 1)
+                          setItemQuantity(Number(value) || 1)
                         }
                         min={1}
                         max={99}
@@ -1127,7 +1433,7 @@ export default function CheckoutPage() {
                         onChange={(value) =>
                           setNewItemForm({
                             ...newItemForm,
-                            price: typeof value === "number" ? value : 0,
+                            price: Number(value) || 0,
                           })
                         }
                         required
@@ -1138,7 +1444,7 @@ export default function CheckoutPage() {
                         label="Quantity"
                         value={itemQuantity}
                         onChange={(value) =>
-                          setItemQuantity(typeof value === "number" ? value : 1)
+                          setItemQuantity(Number(value) || 1)
                         }
                         min={1}
                         max={99}
@@ -1160,7 +1466,6 @@ export default function CheckoutPage() {
                       />
                     </Grid.Col>
 
-                    {/* Category-specific fields for services */}
                     {newItemForm.category === "Flight" && (
                       <>
                         <Grid.Col span={12}>
@@ -1367,81 +1672,63 @@ export default function CheckoutPage() {
 
           <Tabs.Panel value="internal" pt="md">
             <Stack gap="md">
-              <Tabs value={itemType} onChange={setItemType}>
+              <Tabs value={itemType} onChange={(v) => { setItemType(v); setSelectedInternalItem(null); setCustomFieldValues({}); }}>
                 <Tabs.List>
-                  <Tabs.Tab
-                    value="goods"
-                    leftSection={<IconPackage size={16} />}
-                  >
-                    Inventory Items
+                  <Tabs.Tab value="goods" leftSection={<IconPackage size={16} />}>
+                    Products
                   </Tabs.Tab>
-                  <Tabs.Tab
-                    value="services"
-                    leftSection={<IconPlane size={16} />}
-                  >
+                  <Tabs.Tab value="services" leftSection={<IconPlane size={16} />}>
                     Services
                   </Tabs.Tab>
                 </Tabs.List>
 
                 <Tabs.Panel value="goods" pt="md">
                   <TextInput
-                    placeholder="Search inventory items..."
+                    placeholder="Search products..."
                     leftSection={<IconSearch size={16} />}
                     mb="md"
+                    value={internalSearch}
+                    onChange={(e) => setInternalSearch(e.currentTarget.value)}
                   />
-
-                  <Table highlightOnHover>
-                    <Table.Thead>
-                      <Table.Tr>
-                        <Table.Th>Item</Table.Th>
-                        <Table.Th>Category</Table.Th>
-                        <Table.Th>Price</Table.Th>
-                        <Table.Th>Status</Table.Th>
-                      </Table.Tr>
-                    </Table.Thead>
-                    <Table.Tbody>
-                      {catalogueItems.map((item) => (
-                        <Table.Tr
-                          key={item.value}
-                          style={{
-                            cursor: "pointer",
-                            backgroundColor:
-                              selectedCatalogueItem === item.value
-                                ? "var(--mantine-color-blue-0)"
-                                : undefined,
-                          }}
-                          onClick={() => setSelectedCatalogueItem(item.value)}
-                        >
-                          <Table.Td>
-                            <Text fw={500} size="sm">
-                              {item.label}
-                            </Text>
-                            <Text size="xs" c="dimmed">
-                              {item.value}
-                            </Text>
-                          </Table.Td>
-                          <Table.Td>
-                            <Badge variant="light" size="sm">
-                              {item.category}
-                            </Badge>
-                          </Table.Td>
-                          <Table.Td>
-                            <Text size="sm" fw={600} c="cyan">
-                              KES {item.price.toLocaleString()}
-                            </Text>
-                          </Table.Td>
-                          <Table.Td>
-                            <Badge
-                              variant="light"
-                              color={item.inStock ? "green" : "red"}
-                            >
-                              {item.inStock ? "In Stock" : "Out of Stock"}
-                            </Badge>
-                          </Table.Td>
+                  {catalogueProductsLoading ? (
+                    <Group justify="center" py="md"><Loader size="sm" /></Group>
+                  ) : (
+                    <Table highlightOnHover>
+                      <Table.Thead>
+                        <Table.Tr>
+                          <Table.Th>Item</Table.Th>
+                          <Table.Th>Category</Table.Th>
+                          <Table.Th>Price</Table.Th>
                         </Table.Tr>
-                      ))}
-                    </Table.Tbody>
-                  </Table>
+                      </Table.Thead>
+                      <Table.Tbody>
+                        {catalogueProducts
+                          .filter((p: Product) => p.name.toLowerCase().includes(internalSearch.toLowerCase()))
+                          .map((p: Product) => (
+                            <Table.Tr
+                              key={p.id}
+                              style={{
+                                cursor: "pointer",
+                                backgroundColor: selectedInternalItem?.id === p.id && selectedInternalItem?.type === "product"
+                                  ? "var(--mantine-color-blue-0)" : undefined,
+                              }}
+                              onClick={() => setSelectedInternalItem({ id: p.id, type: "product" })}
+                            >
+                              <Table.Td>
+                                <Text fw={500} size="sm">{p.name}</Text>
+                                <Text size="xs" c="dimmed">{p.id}</Text>
+                              </Table.Td>
+                              <Table.Td>
+                                <Badge variant="light" size="sm">{p.category?.name}</Badge>
+                              </Table.Td>
+                              <Table.Td>
+                                <Text size="sm" fw={600} c="cyan">{formatCurrency(Number(p.base_price))}</Text>
+                              </Table.Td>
+                            </Table.Tr>
+                          ))}
+                      </Table.Tbody>
+                    </Table>
+                  )}
                 </Tabs.Panel>
 
                 <Tabs.Panel value="services" pt="md">
@@ -1449,95 +1736,78 @@ export default function CheckoutPage() {
                     placeholder="Search services..."
                     leftSection={<IconSearch size={16} />}
                     mb="md"
+                    value={internalSearch}
+                    onChange={(e) => setInternalSearch(e.currentTarget.value)}
                   />
-
-                  <Table highlightOnHover>
-                    <Table.Thead>
-                      <Table.Tr>
-                        <Table.Th>Service</Table.Th>
-                        <Table.Th>Category</Table.Th>
-                        <Table.Th>Price</Table.Th>
-                        <Table.Th>Status</Table.Th>
-                      </Table.Tr>
-                    </Table.Thead>
-                    <Table.Tbody>
-                      {[
-                        {
-                          value: "SRV-001",
-                          label: "Flight Booking Service",
-                          category: "Travel",
-                          price: 15000,
-                          inStock: true,
-                        },
-                        {
-                          value: "SRV-002",
-                          label: "Hotel Accommodation",
-                          category: "Travel",
-                          price: 12000,
-                          inStock: true,
-                        },
-                        {
-                          value: "SRV-003",
-                          label: "Car Rental Service",
-                          category: "Transport",
-                          price: 8000,
-                          inStock: true,
-                        },
-                      ].map((item) => (
-                        <Table.Tr
-                          key={item.value}
-                          style={{
-                            cursor: "pointer",
-                            backgroundColor:
-                              selectedCatalogueItem === item.value
-                                ? "var(--mantine-color-blue-0)"
-                                : undefined,
-                          }}
-                          onClick={() => setSelectedCatalogueItem(item.value)}
-                        >
-                          <Table.Td>
-                            <Text fw={500} size="sm">
-                              {item.label}
-                            </Text>
-                            <Text size="xs" c="dimmed">
-                              {item.value}
-                            </Text>
-                          </Table.Td>
-                          <Table.Td>
-                            <Badge variant="light" size="sm">
-                              {item.category}
-                            </Badge>
-                          </Table.Td>
-                          <Table.Td>
-                            <Text size="sm" fw={600} c="cyan">
-                              From KES {item.price.toLocaleString()}
-                            </Text>
-                          </Table.Td>
-                          <Table.Td>
-                            <Badge variant="light" color="green">
-                              Available
-                            </Badge>
-                          </Table.Td>
+                  {catalogueServicesLoading ? (
+                    <Group justify="center" py="md"><Loader size="sm" /></Group>
+                  ) : (
+                    <Table highlightOnHover>
+                      <Table.Thead>
+                        <Table.Tr>
+                          <Table.Th>Service</Table.Th>
+                          <Table.Th>Category</Table.Th>
+                          <Table.Th>Price</Table.Th>
                         </Table.Tr>
-                      ))}
-                    </Table.Tbody>
-                  </Table>
+                      </Table.Thead>
+                      <Table.Tbody>
+                        {catalogueServices
+                          .filter((s: Service) => s.name.toLowerCase().includes(internalSearch.toLowerCase()))
+                          .map((s: Service) => (
+                            <Table.Tr
+                              key={s.id}
+                              style={{
+                                cursor: "pointer",
+                                backgroundColor: selectedInternalItem?.id === s.id && selectedInternalItem?.type === "service"
+                                  ? "var(--mantine-color-blue-0)" : undefined,
+                              }}
+                              onClick={() => { setSelectedInternalItem({ id: s.id, type: "service" }); setCustomFieldValues({}); }}
+                            >
+                              <Table.Td>
+                                <Text fw={500} size="sm">{s.name}</Text>
+                                <Text size="xs" c="dimmed">{s.id}</Text>
+                              </Table.Td>
+                              <Table.Td>
+                                <Badge variant="light" size="sm">{s.category?.name}</Badge>
+                              </Table.Td>
+                              <Table.Td>
+                                <Text size="sm" fw={600} c="cyan">{formatCurrency(Number(s.base_price))}</Text>
+                              </Table.Td>
+                            </Table.Tr>
+                          ))}
+                      </Table.Tbody>
+                    </Table>
+                  )}
                 </Tabs.Panel>
               </Tabs>
 
-              {selectedCatalogueItem &&
-                selectedCatalogueItem !== "existing" &&
-                selectedCatalogueItem !== "suppliers" && (
+              {selectedInternalItem && (
+                <Stack gap="sm">
                   <NumberInput
                     label="Quantity"
                     value={itemQuantity}
-                    onChange={(value) =>
-                      setItemQuantity(typeof value === "number" ? value : 1)
-                    }
+                    onChange={(value) => setItemQuantity(Number(value) || 1)}
                     min={1}
                     max={99}
                   />
-                )}
+                  {(() => {
+                    if (selectedInternalItem.type !== "service") return null;
+                    const svc = catalogueServices.find((s: Service) => s.id === selectedInternalItem.id);
+                    const fields = svc?.category?.custom_fields;
+                    if (!fields?.length) return null;
+                    return (
+                      <>
+                        <Divider label="Service Details" labelPosition="left" />
+                        <CustomFieldsForm
+                          customFields={fields}
+                          formData={customFieldValues}
+                          setFormData={setCustomFieldValues}
+                        />
+                      </>
+                    );
+                  })()}
+                </Stack>
+              )}
             </Stack>
           </Tabs.Panel>
 
@@ -1565,7 +1835,6 @@ export default function CheckoutPage() {
                     leftSection={<IconSearch size={16} />}
                     mb="md"
                   />
-
                   <Table highlightOnHover>
                     <Table.Thead>
                       <Table.Tr>
@@ -1646,7 +1915,6 @@ export default function CheckoutPage() {
                     leftSection={<IconSearch size={16} />}
                     mb="md"
                   />
-
                   <Table highlightOnHover>
                     <Table.Thead>
                       <Table.Tr>
@@ -1663,21 +1931,18 @@ export default function CheckoutPage() {
                           label: "International Flight Booking",
                           supplier: "Kenya Airways",
                           price: 45000,
-                          inStock: true,
                         },
                         {
                           value: "EXT-002",
                           label: "Luxury Hotel Package",
                           supplier: "Serena Hotels",
                           price: 25000,
-                          inStock: true,
                         },
                         {
                           value: "EXT-003",
                           label: "Executive Car Service",
                           supplier: "Avis Kenya",
                           price: 15000,
-                          inStock: true,
                         },
                       ].map((item) => (
                         <Table.Tr
@@ -1725,9 +1990,7 @@ export default function CheckoutPage() {
                   <NumberInput
                     label="Quantity"
                     value={itemQuantity}
-                    onChange={(value) =>
-                      setItemQuantity(typeof value === "number" ? value : 1)
-                    }
+                    onChange={(value) => setItemQuantity(Number(value) || 1)}
                     min={1}
                     max={99}
                   />
@@ -1742,13 +2005,15 @@ export default function CheckoutPage() {
           </Button>
           <Button
             onClick={addItem}
+            loading={addItemLoading}
             disabled={
-              selectedCatalogueItem === "existing" ||
-              selectedCatalogueItem === "suppliers" ||
+              !addItemLoading &&
+              selectedInternalItem === null &&
+              (selectedCatalogueItem === "suppliers" ||
               (selectedCatalogueItem === null &&
                 (!newItemForm.name ||
                   !newItemForm.category ||
-                  newItemForm.price <= 0))
+                  newItemForm.price <= 0)))
             }
           >
             Add Item

@@ -75,7 +75,7 @@ const CustomFields = ({
             No custom fields yet.
           </Text>
           <Text size="xs" c="dimmed" mt={4}>
-            Click "Add Field" to define fields for this category.
+            Click &quot;Add Field&quot; to define fields for this category.
           </Text>
         </Paper>
       )}

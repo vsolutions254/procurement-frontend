@@ -1,5 +1,3 @@
-import { useAppSelector } from "@/lib/redux/hooks";
-import { RootState } from "@/lib/redux/store";
 import {
   Button,
   Card,
@@ -12,7 +10,6 @@ import {
 import React from "react";
 
 const ApprovalLimitsSettings = () => {
-  const { user } = useAppSelector((state: RootState) => state.auth);
 
   return (
     <Tabs.Panel value="approvals" pt="md">

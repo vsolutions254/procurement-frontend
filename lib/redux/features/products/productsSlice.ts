@@ -1,6 +1,4 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { ProductsState } from "../../types/products-state";
-import { Product } from "@/types/product";
 import clientaxiosinstance from "@/lib/services/clientaxiosinstance";
 import axios from "axios";
 
@@ -107,12 +105,13 @@ export const getProducts = createAsyncThunk(
 export const getProduct = createAsyncThunk(
   "products/getProduct",
   async (item_id: number, { rejectWithValue }) => {
+    console.log("FIRED", item_id);
     try {
       await clientaxiosinstance.get("/sanctum/csrf-cookie");
 
       const response = await clientaxiosinstance.get(`/products/${item_id}`);
 
-      return response.data;
+      return response.data as Product;
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {
         return rejectWithValue(error.response.data);
@@ -183,7 +182,6 @@ export const productsSlice = createSlice({
         state.productsError = null;
       })
       .addCase(getProducts.fulfilled, (state, action) => {
-        console.log("getProducts payload:", action.payload);
         state.productsLoading = false;
         const data = action.payload?.data ?? action.payload;
         state.products = Array.isArray(data) ? data : [];
@@ -225,7 +223,7 @@ export const productsSlice = createSlice({
       .addCase(deleteProduct.fulfilled, (state, action) => {
         state.productLoading = false;
         state.products = state.products.filter(
-          (p) => String(p.id) !== String(action.payload),
+          (p: Product) => String(p.id) !== String(action.payload),
         );
         state.productError = null;
       })

@@ -9,6 +9,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { Role } from "@/types/role";
 import {
   Card,
+  Center,
   Text,
   Group,
   Button,
@@ -19,6 +20,7 @@ import {
   Grid,
   ActionIcon,
   Checkbox,
+  Loader,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { IconArrowLeft } from "@tabler/icons-react";
@@ -122,11 +124,21 @@ export default function EditUserPage({
     }
   };
 
-  if (userLoading && !formData) return <div>Loading...</div>;
+  if (userLoading && !formData)
+    return (
+      <Center h="100vh">
+        <Loader />
+      </Center>
+    );
 
   if (userError) return <div>Error: {userError}</div>;
 
-  if (!formData) return <div>Loading...</div>;
+  if (!formData)
+    return (
+      <Center h="100vh">
+        <Loader />
+      </Center>
+    );
 
   return (
     <Stack gap="lg">

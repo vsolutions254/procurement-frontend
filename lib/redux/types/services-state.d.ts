@@ -1,5 +1,3 @@
-import { Product } from "@/types/product";
-
 type ServicesState = {
   services: Service[];
   servicesLoading: boolean;

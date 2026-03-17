@@ -1,6 +1,5 @@
-type Service = {
+type service_fields = {
   id: number;
-  category: Category;
   name: string;
   description?: string;
   base_price: number;
@@ -9,4 +8,11 @@ type Service = {
   sellable: Sellable;
   created_at: string;
   updated_at: string;
+  category: {
+    id: number;
+    name: string;
+    custom_fields?: CustomField[];
+  };
 };
+
+type Service = service_fields;

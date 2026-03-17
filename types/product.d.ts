@@ -16,4 +16,5 @@ type Product = {
   max_stock: number;
   current_stock: number;
   stock_status: "in_stock" | "low_stock" | "out_of_stock" | "overstock";
+  sellable?: Sellable;
 };

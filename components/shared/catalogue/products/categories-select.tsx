@@ -56,7 +56,7 @@ const CategoriesSelect = ({ form }: CategoriesSelectProps) => {
 
       setNewCategoryName("");
       setModalOpen(false);
-    } catch (error) {
+    } catch {
       notifications.show({
         title: "Error",
         message: "Failed to create category. Please try again.",

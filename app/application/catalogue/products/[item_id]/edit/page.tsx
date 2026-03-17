@@ -115,7 +115,7 @@ export default function EditCatalogueItem({ params }: EditCatalogueItemProps) {
     form.setValues({
       name: product.name || "",
       category_id: categoryId,
-      supplier_ids: product.suppliers?.map((s) => s.id.toString()) ?? [],
+      supplier_ids: product.suppliers?.map((s: User) => s.id.toString()) ?? [],
       base_price: product.base_price || 0,
       description: product.description || "",
       specifications: product.specifications || "",
@@ -124,7 +124,7 @@ export default function EditCatalogueItem({ params }: EditCatalogueItemProps) {
     if (editor && product.specifications) {
       editor.commands.setContent(product.specifications);
     }
-  }, [product, editor]);
+  }, [product, editor]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fix 2: Move notifications.show() out of the render body into a useEffect
   // to avoid calling setState on a different component during render.
@@ -146,10 +146,12 @@ export default function EditCatalogueItem({ params }: EditCatalogueItemProps) {
   const mergedSupplierOptions = [
     ...supplierOptions,
     ...(product?.suppliers ?? [])
-      .filter((s) => !supplierOptions.find((o) => o.value === s.id.toString()))
-      .map((s) => ({
+      .filter(
+        (s: User) => !supplierOptions.find((o) => o.value === s.id.toString()),
+      )
+      .map((s: User) => ({
         value: s.id.toString(),
-        label: s.company_name || s.supplier_trading_name || s.name,
+        label: s.company_name || s.supplier_trading_name,
       })),
   ];
 

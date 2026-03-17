@@ -2,7 +2,7 @@ import { fetchWarehouses } from "@/lib/redux/features/merchants/merchantSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { MultiSelect } from "@mantine/core";
 import { UseFormReturnType } from "@mantine/form";
-import React, { useEffect, SetStateAction, Dispatch } from "react";
+import React, { useEffect } from "react";
 
 interface WarehousesMultiSelectProps {
   form: UseFormReturnType<CreateProductFormData>;

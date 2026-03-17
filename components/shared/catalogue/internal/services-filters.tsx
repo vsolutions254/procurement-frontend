@@ -1,5 +1,4 @@
 import { useDebounce } from "@/hooks/useDebounce";
-import { fetchCategories } from "@/lib/redux/features/products/categories/categoriesSlice";
 import { fetchServiceCategories } from "@/lib/redux/features/services/categories/serviceCategoriesSlice";
 import { getServices } from "@/lib/redux/features/services/servicesSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";

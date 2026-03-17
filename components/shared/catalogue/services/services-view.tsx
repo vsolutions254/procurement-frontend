@@ -1,6 +1,8 @@
 "use client";
 
-import { useAppSelector } from "@/lib/redux/hooks";
+import { addServiceToCart } from "@/lib/redux/features/services/cart/cartSlice";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { notifications } from "@mantine/notifications";
 import { categoryColors } from "@/lib/utils/constants";
 import {
   ActionIcon,
@@ -26,12 +28,17 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import ServiceGridCard from "./service-grid-card";
 import { categoryIcons } from "@/lib/utils/component-constants";
+import AddToCartModal from "./add-to-cart-modal";
 
 interface ServicesViewProps {
   onView?: (id: number) => void;
 }
 
-function getSupplierName(supplier: any): string {
+interface ServicesViewProps {
+  onView?: (id: number) => void;
+}
+
+function getSupplierName(supplier: User): string {
   return (
     supplier?.supplier_trading_name ||
     supplier?.company_name ||
@@ -56,9 +63,15 @@ function taxStatusLabel(status: string) {
 
 const ServicesView = ({ onView }: ServicesViewProps) => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [addToCartModalOpened, setAddToCartModalOpened] = useState(false);
+  const [selectedService, setSelectedService] = useState<Service | null>(null);
   const router = useRouter();
+  const dispatch = useAppDispatch();
 
   const { services } = useAppSelector((state) => state.services);
+  const { servicesLoading: cartLoading } = useAppSelector(
+    (state) => state.services_cart,
+  );
 
   const handleView = (id: number) => {
     if (onView) {
@@ -66,6 +79,38 @@ const ServicesView = ({ onView }: ServicesViewProps) => {
     } else {
       router.push(`/application/catalogue/services/${id}`);
     }
+  };
+
+  const handleAddToCart = async (
+    service: Service,
+    quantity: number,
+    customValues: CustomFieldValue[],
+  ) => {
+    try {
+      await dispatch(
+        addServiceToCart({
+          service_id: service.id,
+          quantity,
+          custom_values: customValues,
+        }),
+      ).unwrap();
+      notifications.show({
+        title: "Added to Cart",
+        message: `${service.name} added successfully`,
+        color: "green",
+      });
+    } catch (error: unknown) {
+      notifications.show({
+        title: "Cart Error",
+        message: (error as { message?: string })?.message || "Failed to add service to cart",
+        color: "red",
+      });
+    }
+  };
+
+  const handleAddToCartClick = (service: Service) => {
+    setSelectedService(service);
+    setAddToCartModalOpened(true);
   };
 
   return (
@@ -104,9 +149,14 @@ const ServicesView = ({ onView }: ServicesViewProps) => {
               <EmptyState />
             ) : (
               <Grid gutter="md">
-                {services.map((service) => (
+                {services.map((service: Service) => (
                   <Grid.Col key={service.id} span={{ base: 12, sm: 6, lg: 4 }}>
-                    <ServiceGridCard service={service} onView={handleView} />
+                    <ServiceGridCard
+                      service={service}
+                      onView={handleView}
+                      onAddToCart={handleAddToCartClick}
+                      loading={cartLoading}
+                    />
                   </Grid.Col>
                 ))}
               </Grid>
@@ -158,9 +208,8 @@ const ServicesView = ({ onView }: ServicesViewProps) => {
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
-                  {services.map((service) => {
-                    const color =
-                      categoryColors[service.category?.name] ?? "gray";
+                  {services.map((service: Service) => {
+                    const color = categoryColors[service.category?.name] ?? "gray";
                     const primarySupplier = service.sellable?.suppliers?.[0];
                     const taxStatus = service.sellable?.tax_status;
                     // tax rate comes from the eager-loaded Tax model, or falls
@@ -289,6 +338,14 @@ const ServicesView = ({ onView }: ServicesViewProps) => {
           </Card>
         )}
       </Stack>
+
+      <AddToCartModal
+        opened={addToCartModalOpened}
+        onClose={() => setAddToCartModalOpened(false)}
+        service={selectedService}
+        onAddToCart={handleAddToCart}
+        loading={cartLoading}
+      />
     </Grid.Col>
   );
 };

@@ -58,7 +58,8 @@ export default function SuppliersCatalogPage() {
     dispatch(fetchServiceCategories(1));
   }, [dispatch]);
 
-  const currentItems = activeTab === "inventory" ? products : services;
+  const currentItems: (Product | service_fields)[] =
+    activeTab === "inventory" ? products : services;
   const currentCategories =
     activeTab === "inventory" ? categories : serviceCategories;
 
@@ -355,7 +356,10 @@ export default function SuppliersCatalogPage() {
                                 Supplier
                               </Text>
                               <Text size="xs" fw={500}>
-                                {item.suppliers[0].name}
+                                {("suppliers" in item
+                                  ? item.suppliers[0]?.company_name
+                                  : item.sellable?.suppliers[0]
+                                      ?.company_name) ?? "N/A"}
                               </Text>
                             </div>
                             <Text size="lg" fw={700} c="cyan">
@@ -405,12 +409,15 @@ export default function SuppliersCatalogPage() {
                         </Table.Td>
                         <Table.Td>
                           <Badge variant="light" size="sm">
-                            {item.category}
+                            {typeof item.category === 'object' ? item.category?.name : item.category}
                           </Badge>
                         </Table.Td>
                         <Table.Td>
                           <Text size="sm">
-                            {item.suppliers[0]?.name || "N/A"}
+                            {("suppliers" in item
+                              ? item.suppliers[0]?.company_name
+                              : item.sellable?.suppliers[0]?.company_name) ??
+                              "N/A"}
                           </Text>
                         </Table.Td>
                         <Table.Td>

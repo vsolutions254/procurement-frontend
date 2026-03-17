@@ -15,6 +15,8 @@ import {
   Stack,
   Divider,
   Box,
+  Center,
+  Loader,
 } from "@mantine/core";
 import { IconBuilding, IconMail, IconLock } from "@tabler/icons-react";
 import Link from "next/link";
@@ -42,22 +44,15 @@ export default function LoginPage() {
 
   if (loading) {
     return (
-      <div
+      <Center
         style={{
           minHeight: "100vh",
           backgroundColor:
             "light-dark(var(--mantine-color-white), var(--mantine-color-dark-7))",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
         }}
       >
-        <div style={{ textAlign: "center" }}>
-          <Title c="dimmed" order={1} mb="xs">
-            Loading...
-          </Title>
-        </div>
-      </div>
+        <Loader size="lg" />
+      </Center>
     );
   }
 

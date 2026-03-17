@@ -12,14 +12,23 @@ import {
   ThemeIcon,
   Tooltip,
 } from "@mantine/core";
-import { IconBriefcase, IconEye, IconUser } from "@tabler/icons-react";
+import {
+  IconBriefcase,
+  IconEye,
+  IconShoppingCart,
+  IconUser,
+} from "@tabler/icons-react";
 
 export default function ServiceGridCard({
   service,
   onView,
+  onAddToCart,
+  loading,
 }: {
   service: Service;
   onView: (id: number) => void;
+  onAddToCart?: (service: Service) => void;
+  loading?: boolean;
 }) {
   const color = categoryColors[service.category.name] ?? "gray";
   const icon = categoryIcons[service.category.name] ?? (
@@ -37,17 +46,6 @@ export default function ServiceGridCard({
         flexDirection: "column",
         gap: 12,
         transition: "box-shadow 0.18s ease, transform 0.18s ease",
-        cursor: "pointer",
-      }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLDivElement).style.boxShadow =
-          "0 6px 24px rgba(0,0,0,0.10)";
-        (e.currentTarget as HTMLDivElement).style.transform =
-          "translateY(-2px)";
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLDivElement).style.boxShadow = "";
-        (e.currentTarget as HTMLDivElement).style.transform = "";
       }}
     >
       {/* Top row */}
@@ -85,7 +83,7 @@ export default function ServiceGridCard({
         <Group gap={4}>
           <IconUser size={12} color="var(--mantine-color-dimmed)" />
           <Text size="xs" c="dimmed" lineClamp={1}>
-            {service.sellable.suppliers[0].name}
+            {service.sellable.suppliers[0].company_name}
           </Text>
         </Group>
       </Stack>
@@ -95,16 +93,31 @@ export default function ServiceGridCard({
         <Text fw={700} size="md" c="cyan.6">
           {service.base_price}
         </Text>
-        <Tooltip label="View details" withArrow>
-          <ActionIcon
-            variant="light"
-            color="blue"
-            radius="md"
-            onClick={() => onView(service.id)}
-          >
-            <IconEye size={15} />
-          </ActionIcon>
-        </Tooltip>
+        <Group gap="xs">
+          <Tooltip label="View details" withArrow>
+            <ActionIcon
+              variant="light"
+              color="blue"
+              radius="md"
+              onClick={() => onView(service.id)}
+            >
+              <IconEye size={15} />
+            </ActionIcon>
+          </Tooltip>
+          {onAddToCart && (
+            <Tooltip label="Add to cart" withArrow>
+              <ActionIcon
+                variant="filled"
+                color="green"
+                radius="md"
+                loading={loading}
+                onClick={() => onAddToCart(service)}
+              >
+                <IconShoppingCart size={15} />
+              </ActionIcon>
+            </Tooltip>
+          )}
+        </Group>
       </Group>
     </Card>
   );

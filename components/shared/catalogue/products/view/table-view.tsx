@@ -12,10 +12,16 @@ import Link from "next/link";
 import React, { useState } from "react";
 import ConfirmDeleteModal from "./confirm-delete-modal";
 
-const ProductTableView = ({ activeTab }: { activeTab: string }) => {
-  const { products } = useAppSelector((state) => state.products);
+interface ProductTableViewProps {
+  addProductToCart: (item: CartProduct) => Promise<void>;
+}
 
+const ProductTableView = ({
+  addProductToCart,
+}: ProductTableViewProps) => {
+  const { products } = useAppSelector((state) => state.products);
   const [opened, { open, close }] = useDisclosure(false);
+  const [loadingId, setLoadingId] = useState<number | null>(null);
   const [selectedItem, setSelectedItem] = useState<{
     id: string | number;
     name: string;
@@ -24,6 +30,12 @@ const ProductTableView = ({ activeTab }: { activeTab: string }) => {
   const handleDeleteClick = (id: string | number, name: string) => {
     setSelectedItem({ id, name });
     open();
+  };
+
+  const handleAddToCart = async (item: Product) => {
+    setLoadingId(item.id);
+    await addProductToCart({ product_id: item.id, quantity: 1 });
+    setLoadingId(null);
   };
 
   return (
@@ -48,74 +60,58 @@ const ProductTableView = ({ activeTab }: { activeTab: string }) => {
         </Table.Thead>
 
         <Table.Tbody>
-          {products.map((item) => (
+          {products.map((item: Product) => (
             <React.Fragment key={item.id}>
               <Table.Tr>
                 <Table.Td>
-                  <div>
-                    <Text fw={500} size="sm">
-                      {item.name}
-                    </Text>
-
-                    <Text size="xs" c="dimmed">
-                      {"product_code" in item ? item.product_code : item.id}
-                    </Text>
-
-                    <Text size="xs" c="dimmed" lineClamp={1}>
-                      {item.description}
-                    </Text>
-                  </div>
+                  <Text fw={500} size="sm">
+                    {item.name}
+                  </Text>
+                  <Text size="xs" c="dimmed">
+                    {item.product_code ?? item.id}
+                  </Text>
+                  <Text size="xs" c="dimmed" lineClamp={1}>
+                    {item.description}
+                  </Text>
                 </Table.Td>
-
                 <Table.Td>
                   <Badge variant="light" size="sm">
-                    {"category" in item && typeof item.category === "object"
+                    {typeof item.category === "object"
                       ? item.category.name
                       : item.category}
                   </Badge>
                 </Table.Td>
-
                 <Table.Td>
                   <Text size="sm">
-                    {"suppliers" in item && item.suppliers?.length > 0
+                    {item.suppliers?.length
                       ? item.suppliers
-                          .slice(0, 3)
-                          .map((s) => s.company_name || s.name)
+                          .map((s: User) => s.company_name)
                           .join(", ")
                       : "No suppliers"}
                   </Text>
                 </Table.Td>
-
                 <Table.Td>
                   <Text size="sm" fw={600} c="cyan">
                     KES {item.base_price?.toLocaleString()}
                   </Text>
                 </Table.Td>
-
                 <Table.Td>
                   <Group gap="xs">
                     <ActionIcon variant="subtle" color="blue">
-                      <Link
-                        href={
-                          activeTab === "inventory"
-                            ? `/application/catalogue/${item.id}`
-                            : `/application/cart/non-tangible/${item.id}`
-                        }
-                      >
+                      <Link href={`/application/catalogue/products/${item.id}`}>
                         <IconEye size={16} />
                       </Link>
                     </ActionIcon>
-
                     <ActionIcon variant="subtle" color="orange">
-                      <Link href={`/application/catalogue/${item.id}/edit`}>
+                      <Link
+                        href={`/application/catalogue/products/${item.id}/edit`}
+                      >
                         <IconEdit size={16} />
                       </Link>
                     </ActionIcon>
-
                     <ActionIcon variant="subtle" color="gray">
                       <IconHeart size={16} />
                     </ActionIcon>
-
                     <ActionIcon
                       variant="subtle"
                       color="red"
@@ -132,7 +128,9 @@ const ProductTableView = ({ activeTab }: { activeTab: string }) => {
                   <Button
                     fullWidth
                     size="xs"
+                    loading={loadingId === item.id}
                     leftSection={<IconShoppingCart size={14} />}
+                    onClick={() => handleAddToCart(item)}
                   >
                     Add to Cart
                   </Button>
