@@ -16,7 +16,6 @@ cypress/screenshots/
 cypress/videos/
 reports/
 
-*.env*
 *.log
 
 *.tsbuildinfo

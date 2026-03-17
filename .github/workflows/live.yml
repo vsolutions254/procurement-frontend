@@ -45,7 +45,9 @@ jobs:
       - name: Build Docker image
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-        run: docker compose -f prod.compose.yaml build
+        run: |
+          export $(grep -v '^#' .env.production | xargs)
+          docker compose -f prod.compose.yaml build
 
       - name: Push Docker image
         env:

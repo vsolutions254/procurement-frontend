@@ -10,6 +10,12 @@ RUN --mount=type=cache,target=/root/.npm npm ci --legacy-peer-deps && npm cache 
 
 COPY . .
 
+ARG NEXT_PUBLIC_BACKEND_API_URL
+ARG NEXT_PUBLIC_FRONTEND_URL
+
+ENV NEXT_PUBLIC_BACKEND_API_URL=$NEXT_PUBLIC_BACKEND_API_URL
+ENV NEXT_PUBLIC_FRONTEND_URL=$NEXT_PUBLIC_FRONTEND_URL
+
 RUN npm run build
 
 FROM node:${NODE_VERSION} AS runner
