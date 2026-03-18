@@ -13,7 +13,7 @@ const requisitionsSlice = createSlice({
   name: "requisitions",
   initialState,
   reducers: {},
-  extraReducers(builder) {},
+  extraReducers() {},
 });
 
 export default requisitionsSlice.reducer;

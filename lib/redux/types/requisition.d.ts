@@ -1,1 +1,3 @@
-type Requisition = {};
+type Requisition = {
+  id: number;
+};

@@ -69,11 +69,9 @@ export default function CreateRequisition() {
   const { products: cartProducts, productDetails } = useAppSelector(
     (state) => state.products_cart,
   );
-  const {
-    services: cartServices,
-    serviceDetails,
-    servicesLoading,
-  } = useAppSelector((state) => state.services_cart);
+  const { services: cartServices, serviceDetails } = useAppSelector(
+    (state) => state.services_cart,
+  );
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -208,7 +206,9 @@ export default function CreateRequisition() {
     { id: 5, name: "Employee Wellness Program" },
   ];
 
-  const selectedUser = users.find((user) => user.id.toString() === selectedReceiver);
+  const selectedUser = users.find(
+    (user) => user.id.toString() === selectedReceiver,
+  );
 
   const updateItemQuantity = async (id: string, quantity: number) => {
     // Update local state immediately for UI responsiveness

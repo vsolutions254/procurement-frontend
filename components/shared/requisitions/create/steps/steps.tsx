@@ -1,41 +1,4 @@
-import {
-  computeTax,
-  computeTotal,
-  formatCurrency,
-} from "@/components/shared/catalogue/services/utils/constants";
-import { useAppSelector } from "@/lib/redux/hooks";
-import {
-  ActionIcon,
-  Avatar,
-  Badge,
-  Button,
-  Card,
-  Checkbox,
-  Divider,
-  Grid,
-  Group,
-  Loader,
-  NumberInput,
-  Paper,
-  Select,
-  Stack,
-  Stepper,
-  Table,
-  Tabs,
-  Text,
-  Textarea,
-  TextInput,
-  Title,
-} from "@mantine/core";
-import {
-  IconCheck,
-  IconPrinter,
-  IconPackage,
-  IconPlane,
-  IconPlus,
-  IconSearch,
-  IconTrash,
-} from "@tabler/icons-react";
+import { Stepper } from "@mantine/core";
 import React from "react";
 import RequestDetails from "./request-details";
 import DeliveryDetails from "./delivery-details";
