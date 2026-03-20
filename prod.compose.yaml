@@ -10,3 +10,11 @@ services:
     ports:
       - "3000:3000"
     restart: unless-stopped
+    logging:
+      driver: "loki"
+      options:
+        loki-url: "http://127.0.0.1:3100/loki/api/v1/push"
+        loki-external-labels: "app=procurement-frontend,service=nextjs,env=production"
+        mode: "non-blocking"
+        max-size: "10m"
+        max-file: "3"
