@@ -3,6 +3,11 @@ import {
   type ThunkDispatch,
   type UnknownAction,
 } from "@reduxjs/toolkit";
+import {
+  configureStore,
+  type ThunkDispatch,
+  type UnknownAction,
+} from "@reduxjs/toolkit";
 import authReducer from "./features/auth/authSlice";
 import merchantsReducer from "./features/merchants/merchantSlice";
 import productsReducer from "./features/products/productsSlice";
@@ -12,6 +17,7 @@ import servicesReducer from "./features/services/servicesSlice";
 import requisitionsReducer from "./features/requisitions/requisitionsSlice";
 import productCategoriesReducer from "./features/products/categories/categoriesSlice";
 import serviceCategoriesReducer from "./features/services/categories/serviceCategoriesSlice";
+import recommendedItemsReducer from "./features/recommended-items/recommendedItemsSlice";
 import suppliersReducer from "./features/suppliers/supplierSlice";
 import projectsReducer from "./features/projects/projectsSlice";
 import costCentersSlice from "./features/cost-centers/costCentersSlice";
