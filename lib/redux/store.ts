@@ -3,11 +3,6 @@ import {
   type ThunkDispatch,
   type UnknownAction,
 } from "@reduxjs/toolkit";
-import {
-  configureStore,
-  type ThunkDispatch,
-  type UnknownAction,
-} from "@reduxjs/toolkit";
 import authReducer from "./features/auth/authSlice";
 import merchantsReducer from "./features/merchants/merchantSlice";
 import productsReducer from "./features/products/productsSlice";
@@ -39,6 +34,7 @@ export const makeStore = () => {
       service_categories: serviceCategoriesReducer,
       requisitions: requisitionsReducer,
       suppliers: suppliersReducer,
+      recommended_items: recommendedItemsReducer,
     },
   });
 };
