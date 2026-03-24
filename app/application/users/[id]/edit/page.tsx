@@ -6,7 +6,6 @@ import {
 } from "@/lib/redux/features/merchants/merchantSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 
-import { Role } from "@/types/role";
 import {
   Card,
   Center,
@@ -37,7 +36,7 @@ export default function EditUserPage({
   const dispatch = useAppDispatch();
 
   const { user, userLoading, userError } = useAppSelector(
-    (state) => state.merchants
+    (state) => state.merchants,
   );
 
   const [formData, setFormData] = useState<typeof user | null>(null);
@@ -65,10 +64,10 @@ export default function EditUserPage({
   const handleRoleChange = (roleName: string, checked: boolean) => {
     if (!formData) return;
     if (checked) {
-      const newRole: Role = { 
-        id: Date.now(), 
+      const newRole: Role = {
+        id: Date.now(),
         name: roleName,
-        permissions: []
+        permissions: [],
       };
       setFormData({
         ...formData,
@@ -91,7 +90,12 @@ export default function EditUserPage({
         last_name: formData?.last_name || "",
         email: formData?.email || "",
         phone: formData?.phone || "",
-        roles: formData?.roles?.map((role: Role) => ({ id: role.id, name: role.name, permissions: role.permissions })) || [],
+        roles:
+          formData?.roles?.map((role: Role) => ({
+            id: role.id,
+            name: role.name,
+            permissions: role.permissions,
+          })) || [],
       };
       const result = await dispatch(editUser(payload));
       if (editUser.fulfilled.match(result)) {
@@ -113,7 +117,8 @@ export default function EditUserPage({
         });
       }
     } catch (e: unknown) {
-      const errorMessage = e instanceof Error ? e.message : "Failed to update user";
+      const errorMessage =
+        e instanceof Error ? e.message : "Failed to update user";
       notifications.show({
         title: "Error",
         message: errorMessage,
@@ -209,10 +214,10 @@ export default function EditUserPage({
                 value={formData?.roles?.[0]?.name || ""}
                 onChange={(value) => {
                   if (value && formData) {
-                    const newRole: Role = { 
-                      id: Date.now(), 
+                    const newRole: Role = {
+                      id: Date.now(),
                       name: value,
-                      permissions: []
+                      permissions: [],
                     };
                     setFormData({ ...formData, roles: [newRole] });
                   }
@@ -234,7 +239,7 @@ export default function EditUserPage({
                 <Checkbox
                   label={role.label}
                   checked={(formData?.roles || []).some(
-                    (r: Role) => r.name === role.value
+                    (r: Role) => r.name === role.value,
                   )}
                   onChange={(e) =>
                     handleRoleChange(role.value, e.currentTarget.checked)

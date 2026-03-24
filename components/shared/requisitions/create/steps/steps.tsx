@@ -64,7 +64,6 @@ const CreateRequisitionSteps = ({
           items={items}
           requisitionForm={requisitionForm}
           useCustomDelivery={useCustomDelivery}
-          selectedUser={selectedUser}
         />
       </Stepper.Step>
 

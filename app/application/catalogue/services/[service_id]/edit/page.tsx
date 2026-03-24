@@ -79,7 +79,8 @@ export default function EditServicePage({ params }: EditServicePageProps) {
       TextAlign.configure({ types: ["heading", "paragraph"] }),
     ],
     content: "",
-    onUpdate: ({ editor }) => form.setFieldValue("service_terms", editor.getHTML()),
+    onUpdate: ({ editor }) =>
+      form.setFieldValue("service_terms", editor.getHTML()),
   });
 
   const specificationsEditor = useEditor({
@@ -93,7 +94,8 @@ export default function EditServicePage({ params }: EditServicePageProps) {
       TextAlign.configure({ types: ["heading", "paragraph"] }),
     ],
     content: "",
-    onUpdate: ({ editor }) => form.setFieldValue("specifications", editor.getHTML()),
+    onUpdate: ({ editor }) =>
+      form.setFieldValue("specifications", editor.getHTML()),
   });
 
   useEffect(() => {
@@ -110,12 +112,14 @@ export default function EditServicePage({ params }: EditServicePageProps) {
       description: service.description ?? "",
       base_price: service.base_price ?? 0,
       category_id: service.category?.id ?? 0,
-      supplier_ids: service.sellable?.suppliers?.map((s: User) => s.id.toString()) ?? [],
+      supplier_ids:
+        service.sellable?.suppliers?.map((s: User) => s.id.toString()) ?? [],
       tax_status: service.sellable?.tax_status ?? "taxable",
       tax_type: service.sellable?.tax_type ?? "inclusive",
       tax_method: "percentage",
       tax_value_type: service.sellable?.tax_value_type ?? "percentage",
-      tax_value: service.sellable?.tax?.rate ?? service.sellable?.tax_value ?? 16,
+      tax_value:
+        service.sellable?.tax?.rate ?? service.sellable?.tax_value ?? 16,
       specifications: service.specifications ?? "",
       service_terms: service.service_terms ?? "",
     });
@@ -136,7 +140,9 @@ export default function EditServicePage({ params }: EditServicePageProps) {
   const mergedSupplierOptions = [
     ...supplierOptions,
     ...(service?.sellable?.suppliers ?? [])
-      .filter((s: User) => !supplierOptions.find((o) => o.value === s.id.toString()))
+      .filter(
+        (s: User) => !supplierOptions.find((o) => o.value === s.id.toString()),
+      )
       .map((s: User) => ({
         value: s.id.toString(),
         label: s.company_name || s.supplier_trading_name || s.user_name,
@@ -150,7 +156,7 @@ export default function EditServicePage({ params }: EditServicePageProps) {
           service_id: parseInt(service_id),
           service_name: values.service_name,
           category_id: values.category_id,
-          suppliers: values.supplier_ids.map((id) => parseInt(id)) as number[],
+          suppliers: values.supplier_ids?.map((id) => parseInt(id)) as number[],
           description: values.description,
           price: values.base_price,
           specifications: values.specifications,
@@ -163,9 +169,14 @@ export default function EditServicePage({ params }: EditServicePageProps) {
       });
       router.back();
     } catch (error: unknown) {
-      const err = error as { errors?: Record<string, string[]>; message?: string };
+      const err = error as {
+        errors?: Record<string, string[]>;
+        message?: string;
+      };
       const msg =
-        Object.values(err?.errors ?? {}).flat().join(". ") ||
+        Object.values(err?.errors ?? {})
+          .flat()
+          .join(". ") ||
         err?.message ||
         "Failed to update service";
       notifications.show({ title: "Error", message: msg, color: "red" });
@@ -203,7 +214,11 @@ export default function EditServicePage({ params }: EditServicePageProps) {
                   label="Category"
                   placeholder="Select category"
                   key={form.key("category_id")}
-                  value={form.values.category_id ? form.values.category_id.toString() : null}
+                  value={
+                    form.values.category_id
+                      ? form.values.category_id.toString()
+                      : null
+                  }
                   onChange={(val) =>
                     form.setFieldValue("category_id", val ? parseInt(val) : 0)
                   }

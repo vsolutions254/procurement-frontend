@@ -1,7 +1,4 @@
 import clientaxiosinstance from "@/lib/services/clientaxiosinstance";
-import { Permission } from "@/types/permission";
-import { Role } from "@/types/role";
-
 import { Warehouse } from "@/types/warehouse";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
