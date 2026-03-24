@@ -33,6 +33,7 @@ export const makeStore = () => {
       product_categories: productCategoriesReducer,
       service_categories: serviceCategoriesReducer,
       requisitions: requisitionsReducer,
+      recommended_items: recommendedItemsReducer,
       suppliers: suppliersReducer,
       recommended_items: recommendedItemsReducer,
     },
