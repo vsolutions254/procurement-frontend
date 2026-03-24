@@ -35,7 +35,6 @@ export const makeStore = () => {
       requisitions: requisitionsReducer,
       recommended_items: recommendedItemsReducer,
       suppliers: suppliersReducer,
-      recommended_items: recommendedItemsReducer,
     },
   });
 };
