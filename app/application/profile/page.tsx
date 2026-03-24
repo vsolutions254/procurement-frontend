@@ -27,15 +27,11 @@ import {
   TextInput,
   Select,
   Grid,
-  Badge,
   Divider,
   Switch,
-  ActionIcon,
   Tabs,
-  Table,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { IconPackage, IconPlane, IconTrash } from "@tabler/icons-react";
 import { FormEvent, useEffect, useState } from "react";
 
 export default function ProfilePage() {

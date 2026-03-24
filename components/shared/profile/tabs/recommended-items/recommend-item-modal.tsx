@@ -1,11 +1,6 @@
-import { fetchCategories } from "@/lib/redux/features/products/categories/categoriesSlice";
-import { fetchServiceCategories } from "@/lib/redux/features/services/categories/serviceCategoriesSlice";
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { Button, Group, Modal, Tabs } from "@mantine/core";
-import { useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
 import { IconPackage, IconPlane } from "@tabler/icons-react";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import RecommendProductsForm from "./modal/products-form";
 import RecommendedServicesForm from "./modal/services-form";
 
@@ -20,14 +15,6 @@ const RecommendItemModal = ({
   itemType: "goods" | "services";
   setItemType: (type: "goods" | "services") => void;
 }) => {
-  const [servicesAttachments, setServicesAttachments] = useState<File[]>([]);
-
-  const servicesEditor = useEditor({
-    extensions: [StarterKit],
-    content: "",
-    immediatelyRender: false,
-  });
-
   return (
     <Modal
       opened={modalOpen}

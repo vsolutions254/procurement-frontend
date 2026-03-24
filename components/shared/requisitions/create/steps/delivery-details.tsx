@@ -1,13 +1,9 @@
 import { useAppSelector } from "@/lib/redux/hooks";
 import {
-  Avatar,
-  Card,
   Checkbox,
   Grid,
-  Group,
   Select,
   Stack,
-  Text,
   Textarea,
   TextInput,
 } from "@mantine/core";

@@ -31,7 +31,7 @@ const RecommendedItemsTab = () => {
     setItemType("goods");
   };
 
-  const getItemTypeColor = (item: any) =>
+  const getItemTypeColor = (item: RecommendedItem) =>
     item.type === "product" ? "violet" : "cyan";
 
   return (

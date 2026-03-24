@@ -10,7 +10,7 @@ import {
   Text,
 } from "@mantine/core";
 import { IconUpload } from "@tabler/icons-react";
-import React, { Dispatch, SetStateAction, useState } from "react";
+import React, { useState } from "react";
 
 const ProfileAvatar = ({
   uploadLoading,

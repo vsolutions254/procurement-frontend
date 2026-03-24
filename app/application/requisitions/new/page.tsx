@@ -202,14 +202,6 @@ export default function CreateRequisition() {
   const [itemType, setItemType] = useState<string | null>("goods");
   const [useCustomDelivery, setUseCustomDelivery] = useState(false);
 
-  const projects: Project[] = [
-    { id: 1, name: "Digital Transformation Initiative" },
-    { id: 2, name: "Office Modernization" },
-    { id: 3, name: "Remote Work Setup" },
-    { id: 4, name: "IT Infrastructure Upgrade" },
-    { id: 5, name: "Employee Wellness Program" },
-  ];
-
   const selectedUser = users.find(
     (user) => user.id.toString() === selectedReceiver,
   );

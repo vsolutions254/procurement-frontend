@@ -28,8 +28,7 @@ import {
   IconTrash,
 } from "@tabler/icons-react";
 import { UseFormReturnType } from "@mantine/form";
-import React, { useMemo } from "react";
-import { ProcurementProcessor } from "@/lib/utils/procurement-requisitions-processor";
+import React from "react";
 
 const Requisitionsummary = ({
   setAddItemModalOpen,
@@ -47,7 +46,6 @@ const Requisitionsummary = ({
   items,
   requisitionForm,
   useCustomDelivery,
-  selectedUser,
 }: {
   setAddItemModalOpen: (v: boolean) => void;
   viewingService: string | null;
@@ -64,7 +62,6 @@ const Requisitionsummary = ({
   items: RequisitionItem[];
   requisitionForm: UseFormReturnType<CreateRequisitionFormData>;
   useCustomDelivery: boolean;
-  selectedUser: User | undefined;
 }) => {
   const { products: cartProducts, productDetails } = useAppSelector(
     (state) => state.products_cart,
@@ -78,19 +75,6 @@ const Requisitionsummary = ({
   const { projects } = useAppSelector((state) => state.projects);
   const { cost_centers } = useAppSelector((state) => state.cost_centers);
   const { locations } = useAppSelector((state) => state.locations);
-
-  // Process items for procurement recommendations
-  const procurementAnalysis = useMemo(() => {
-    const processedItems = items.map((item) => ({
-      id: item.id,
-      name: item.name,
-      category: item.category || "Unknown",
-      quantity: item.quantity,
-      unitPrice: item.price,
-      totalPrice: item.price * item.quantity,
-    }));
-    return ProcurementProcessor.analyzeRequisition(processedItems);
-  }, [items]);
 
   const selectedProject = projects.find(
     (p) => p.id.toString() === requisitionForm.values.project_id?.toString(),

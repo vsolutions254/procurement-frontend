@@ -35,7 +35,7 @@ export async function middleware(request: NextRequest) {
 
     if (url.pathname.startsWith("/auth") && user) {
       const isSupplier = user.roles?.some(
-        (role: any) => role.name === "SUPPLIER"
+        (role: Role) => role.name === "SUPPLIER",
       );
       const redirectUrl = isSupplier
         ? "/supplier/dashboard"
@@ -45,15 +45,17 @@ export async function middleware(request: NextRequest) {
 
     if (user) {
       const isSupplier = user.roles?.some(
-        (role: any) => role.name === "SUPPLIER"
+        (role: Role) => role.name === "SUPPLIER",
       );
       if (isSupplier && url.pathname.startsWith("/application")) {
         return NextResponse.redirect(
-          new URL("/supplier/dashboard", request.url)
+          new URL("/supplier/dashboard", request.url),
         );
       }
     }
   } catch (error) {
+    console.error("Error in middleware authentication check:", error);
+
     if (
       url.pathname.startsWith("/application") ||
       url.pathname.startsWith("/supplier")

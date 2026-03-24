@@ -1,17 +1,12 @@
 import { useAppSelector } from "@/lib/redux/hooks";
 import {
   ActionIcon,
-  Avatar,
-  Badge,
   Button,
   Card,
-  FileInput,
   Grid,
   Group,
   Select,
-  Stack,
   Tabs,
-  Text,
   TextInput,
   Title,
 } from "@mantine/core";
@@ -21,10 +16,9 @@ import {
   IconEdit,
   IconMail,
   IconPhone,
-  IconUpload,
   IconUser,
 } from "@tabler/icons-react";
-import React, { Dispatch, SetStateAction, useState } from "react";
+import React, { Dispatch, SetStateAction } from "react";
 import ProfileAvatar from "./profile-avatar";
 
 const ProfileTab = ({
