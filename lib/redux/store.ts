@@ -9,10 +9,14 @@ import productsReducer from "./features/products/productsSlice";
 import productsCartReducer from "./features/products/cart/cartSlice";
 import servicesCartReducer from "./features/services/cart/cartSlice";
 import servicesReducer from "./features/services/servicesSlice";
+import requisitionsReducer from "./features/requisitions/requisitionsSlice";
 import productCategoriesReducer from "./features/products/categories/categoriesSlice";
 import serviceCategoriesReducer from "./features/services/categories/serviceCategoriesSlice";
-import recommendedItemsReducer from "./features/recommended-items/recommendedItemsSlice";
+import recommendedItemsReducer from "./features/merchants/recommended-items/recommendedItemsSlice";
 import suppliersReducer from "./features/suppliers/supplierSlice";
+import projectsReducer from "./features/projects/projectsSlice";
+import costCentersSlice from "./features/cost-centers/costCentersSlice";
+import locationsReducer from "./features/locations/locationsSlice";
 
 export const makeStore = () => {
   return configureStore({
@@ -23,9 +27,13 @@ export const makeStore = () => {
       products_cart: productsCartReducer,
       services_cart: servicesCartReducer,
       services: servicesReducer,
+      projects: projectsReducer,
+      cost_centers: costCentersSlice,
+      locations: locationsReducer,
       product_categories: productCategoriesReducer,
       service_categories: serviceCategoriesReducer,
-      recommended_items: recommendedItemsReducer,
+      requisitions: requisitionsReducer,
+      merchants_recommended_items: recommendedItemsReducer,
       suppliers: suppliersReducer,
     },
   });

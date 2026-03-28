@@ -32,7 +32,7 @@ export default function RoleDetailPage({
   const [mounted, setMounted] = useState(false);
 
   const { role, roleLoading, permissions, permissionsLoading } = useAppSelector(
-    (state) => state.merchants
+    (state) => state.merchants,
   );
 
   useEffect(() => {
@@ -46,7 +46,7 @@ export default function RoleDetailPage({
   if (!role || !role.id) return <div>Role not found</div>;
 
   const selectedPermissions =
-    role.permissions?.map((permission) => permission.id) || [];
+    role.permissions?.map((permission: Permission) => permission.id) || [];
 
   return (
     <Container size="lg">
@@ -87,22 +87,24 @@ export default function RoleDetailPage({
               ))}
             </Tabs.List>
 
-            {Object.entries(permissions).map(([groupName, groupPermissions]) => (
-              <Tabs.Panel key={groupName} value={groupName} pt="md">
-                <Grid>
-                  {groupPermissions.map((permission) => (
-                    <Grid.Col span={4} key={permission.id}>
-                      <Checkbox
-                        label={permission.name}
-                        value={permission.id}
-                        checked={selectedPermissions.includes(permission.id)}
-                        readOnly
-                      />
-                    </Grid.Col>
-                  ))}
-                </Grid>
-              </Tabs.Panel>
-            ))}
+            {Object.entries(permissions).map(
+              ([groupName, groupPermissions]) => (
+                <Tabs.Panel key={groupName} value={groupName} pt="md">
+                  <Grid>
+                    {groupPermissions.map((permission) => (
+                      <Grid.Col span={4} key={permission.id}>
+                        <Checkbox
+                          label={permission.name}
+                          value={permission.id}
+                          checked={selectedPermissions.includes(permission.id)}
+                          readOnly
+                        />
+                      </Grid.Col>
+                    ))}
+                  </Grid>
+                </Tabs.Panel>
+              ),
+            )}
           </Tabs>
         </Paper>
       </Stack>

@@ -232,7 +232,7 @@ export default function ServiceDetailPage() {
         service_name={service.name}
         service_id={service.id}
         service_created_at={service.created_at}
-        primary_supplier_name={service.sellable.suppliers[0].company_name}
+        primary_supplier_name={service.sellable.suppliers[0]?.company_name}
         base_price={service.base_price}
         tax_amount={taxAmount}
         total_price={totalPrice}
@@ -404,67 +404,73 @@ export default function ServiceDetailPage() {
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
-                  {service.sellable.suppliers.map((supplier: User, index: number) => (
-                    <Table.Tr key={supplier.id}>
-                      <Table.Td>
-                        <Group gap="sm" wrap="nowrap">
-                          <Avatar
-                            size={34}
-                            radius="xl"
-                            color="blue"
-                            variant="light"
-                          >
-                            {getInitials(supplier.company_name)}
-                          </Avatar>
-                          <Box>
-                            <Group gap={6}>
-                              <Text size="sm" fw={600} lineClamp={1}>
-                                {supplier.company_name}
+                  {service.sellable.suppliers.map(
+                    (supplier: User, index: number) => (
+                      <Table.Tr key={supplier.id}>
+                        <Table.Td>
+                          <Group gap="sm" wrap="nowrap">
+                            <Avatar
+                              size={34}
+                              radius="xl"
+                              color="blue"
+                              variant="light"
+                            >
+                              {getInitials(supplier.company_name)}
+                            </Avatar>
+                            <Box>
+                              <Group gap={6}>
+                                <Text size="sm" fw={600} lineClamp={1}>
+                                  {supplier.company_name}
+                                </Text>
+                                {index === 0 && (
+                                  <Badge
+                                    size="xs"
+                                    variant="light"
+                                    color="green"
+                                  >
+                                    Primary
+                                  </Badge>
+                                )}
+                              </Group>
+                              <Text size="xs" c="dimmed">
+                                @{supplier.user_name}
                               </Text>
-                              {index === 0 && (
-                                <Badge size="xs" variant="light" color="green">
-                                  Primary
-                                </Badge>
-                              )}
-                            </Group>
-                            <Text size="xs" c="dimmed">
-                              @{supplier.user_name}
-                            </Text>
-                          </Box>
-                        </Group>
-                      </Table.Td>
-                      <Table.Td>
-                        <Text size="sm" c="dimmed">
-                          {supplier.user_code}
-                        </Text>
-                      </Table.Td>
-                      <Table.Td>
-                        <Stack gap={2}>
-                          <Text size="sm">{supplier.email}</Text>
-                          {supplier.phone && (
-                            <Text size="xs" c="dimmed">
-                              {supplier.phone}
+                            </Box>
+                          </Group>
+                        </Table.Td>
+                        <Table.Td>
+                          <Text size="sm" c="dimmed">
+                            {supplier.user_code}
+                          </Text>
+                        </Table.Td>
+                        <Table.Td>
+                          <Stack gap={2}>
+                            <Text size="sm">{supplier.email}</Text>
+                            {supplier.phone && (
+                              <Text size="xs" c="dimmed">
+                                {supplier.phone}
+                              </Text>
+                            )}
+                          </Stack>
+                        </Table.Td>
+                        <Table.Td>
+                          {supplier.payment_terms ? (
+                            <TypographyStylesProvider>
+                              <div
+                                dangerouslySetInnerHTML={{
+                                  __html: supplier.payment_terms,
+                                }}
+                              />
+                            </TypographyStylesProvider>
+                          ) : (
+                            <Text size="sm" c="dimmed">
+                              —
                             </Text>
                           )}
-                        </Stack>
-                      </Table.Td>
-                      <Table.Td>
-                        {supplier.payment_terms ? (
-                          <TypographyStylesProvider>
-                            <div
-                              dangerouslySetInnerHTML={{
-                                __html: supplier.payment_terms,
-                              }}
-                            />
-                          </TypographyStylesProvider>
-                        ) : (
-                          <Text size="sm" c="dimmed">
-                            —
-                          </Text>
-                        )}
-                      </Table.Td>
-                    </Table.Tr>
-                  ))}
+                        </Table.Td>
+                      </Table.Tr>
+                    ),
+                  )}
                 </Table.Tbody>
               </Table>
             )}

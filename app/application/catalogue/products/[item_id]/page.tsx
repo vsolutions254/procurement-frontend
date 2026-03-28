@@ -309,7 +309,7 @@ export default function CatalogueItem({ params }: CatalogueItemProps) {
                     {suppliers[0] && (
                       <FieldRow
                         label="Primary supplier"
-                        value={suppliers[0].company_name}
+                        value={suppliers[0]?.company_name}
                       />
                     )}
                   </Stack>

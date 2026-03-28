@@ -1,6 +1,10 @@
 "use client";
 
 import { ContentContainer } from "@/components/layout/content-container";
+import ProfileHeader from "@/components/shared/profile/profile-header";
+import ProfileTabsList from "@/components/shared/profile/tabs/profile-tabs-list";
+import ProfileTab from "@/components/shared/profile/tabs/profile/profile-tab";
+import RecommendedItemsTab from "@/components/shared/profile/tabs/recommended-items/recommended-items-tab";
 import { ProfileSkeleton } from "@/components/skeletons/profile-skeleton";
 import {
   editUserReq,
@@ -23,27 +27,11 @@ import {
   TextInput,
   Select,
   Grid,
-  Avatar,
-  Badge,
   Divider,
   Switch,
-  ActionIcon,
-  FileInput,
   Tabs,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import {
-  IconUser,
-  IconSettings,
-  IconBell,
-  IconShield,
-  IconEdit,
-  IconUpload,
-  IconPhone,
-  IconMail,
-  IconBuilding,
-  IconCalendar,
-} from "@tabler/icons-react";
 import { FormEvent, useEffect, useState } from "react";
 
 export default function ProfilePage() {
@@ -352,274 +340,20 @@ export default function ProfilePage() {
   return (
     <ContentContainer>
       <Stack gap="lg">
-        <Group justify="space-between">
-          <div>
-            <Title order={2} mb="xs">
-              My Profile
-            </Title>
-            <Text c="dimmed" size="sm">
-              Manage your account settings and preferences
-            </Text>
-          </div>
-        </Group>
+        <ProfileHeader />
 
         <Tabs value={activeTab} onChange={setActiveTab}>
-          <Tabs.List>
-            <Tabs.Tab value="profile" leftSection={<IconUser size={16} />}>
-              Profile
-            </Tabs.Tab>
-            <Tabs.Tab value="settings" leftSection={<IconSettings size={16} />}>
-              Settings
-            </Tabs.Tab>
-            <Tabs.Tab
-              value="notifications"
-              leftSection={<IconBell size={16} />}
-            >
-              Notifications
-            </Tabs.Tab>
-            <Tabs.Tab value="security" leftSection={<IconShield size={16} />}>
-              Security
-            </Tabs.Tab>
-          </Tabs.List>
-
-          <Tabs.Panel value="profile" pt="md">
-            <Grid gutter="lg">
-              <Grid.Col span={{ base: 12, md: 4 }}>
-                <Card shadow="sm" padding="lg" radius="md" withBorder>
-                  <Stack align="center" gap="md">
-                    <Avatar
-                      size={120}
-                      radius="xl"
-                      color="cyan"
-                      src={
-                        user.avatar
-                          ? `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/storage/${user.avatar}`
-                          : null
-                      }
-                    >
-                      {user.company_name
-                        ? user.company_name
-                            .split(" ")
-                            .map((word) => word[0])
-                            .join("")
-                            .toUpperCase()
-                        : `${user.first_name?.[0] || ""}${
-                            user.last_name?.[0] || ""
-                          }`.toUpperCase()}
-                    </Avatar>
-                    <div style={{ textAlign: "center" }}>
-                      <Text fw={600} size="lg">
-                        {user.company_name ||
-                          `${user.first_name || ""} ${user.last_name || ""}`}
-                      </Text>
-                      <Badge variant="light" mt="xs">
-                        {user.roles?.[0]?.name}
-                      </Badge>
-                    </div>
-                    <FileInput
-                      placeholder="Select photo"
-                      leftSection={<IconUpload size={16} />}
-                      accept="image/*"
-                      size="xs"
-                      value={profilePic}
-                      onChange={setProfilePic}
-                    />
-                    {profilePic && (
-                      <Button
-                        size="xs"
-                        onClick={handleProfilePicUpload}
-                        loading={uploadLoading}
-                        leftSection={<IconUpload size={14} />}
-                      >
-                        Upload Photo
-                      </Button>
-                    )}
-                  </Stack>
-                </Card>
-              </Grid.Col>
-
-              <Grid.Col span={{ base: 12, md: 8 }}>
-                <Card shadow="sm" padding="lg" radius="md" withBorder>
-                  <Group justify="space-between" mb="md">
-                    <Title order={4}>Personal Information</Title>
-                    <ActionIcon
-                      variant="subtle"
-                      onClick={() => setEditMode(!editMode)}
-                    >
-                      <IconEdit size={16} />
-                    </ActionIcon>
-                  </Group>
-
-                  <form onSubmit={handleEdit}>
-                    <Grid gutter="md">
-                      {user.roles?.[0]?.name !== "MERCHANT" && (
-                        <>
-                          <Grid.Col span={6}>
-                            <TextInput
-                              label="First Name"
-                              value={editUser.first_name || ""}
-                              onChange={(e) =>
-                                setEditUser((prev) =>
-                                  prev
-                                    ? {
-                                        ...prev,
-                                        first_name: e.target.value,
-                                      }
-                                    : null
-                                )
-                              }
-                              disabled={!editMode}
-                              leftSection={<IconUser size={16} />}
-                            />
-                          </Grid.Col>
-                          <Grid.Col span={6}>
-                            <TextInput
-                              label="Last Name"
-                              value={editUser.last_name || ""}
-                              onChange={(e) =>
-                                setEditUser((prev) =>
-                                  prev
-                                    ? {
-                                        ...prev,
-                                        last_name: e.target.value,
-                                      }
-                                    : null
-                                )
-                              }
-                              disabled={!editMode}
-                            />
-                          </Grid.Col>
-                        </>
-                      )}
-                      <Grid.Col span={6}>
-                        <TextInput
-                          label="Email"
-                          value={editUser.email || ""}
-                          onChange={(e) =>
-                            setEditUser((prev) =>
-                              prev
-                                ? {
-                                    ...prev,
-                                    email: e.target.value,
-                                  }
-                                : null
-                            )
-                          }
-                          disabled={!editMode}
-                          leftSection={<IconMail size={16} />}
-                        />
-                      </Grid.Col>
-                      <Grid.Col span={6}>
-                        <TextInput
-                          label="Phone"
-                          value={editUser.phone || ""}
-                          onChange={(e) =>
-                            setEditUser((prev) =>
-                              prev
-                                ? {
-                                    ...prev,
-                                    phone: e.target.value,
-                                  }
-                                : null
-                            )
-                          }
-                          disabled={!editMode}
-                          leftSection={<IconPhone size={16} />}
-                        />
-                      </Grid.Col>
-                      <Grid.Col span={6}>
-                        <Select
-                          label="Role"
-                          value={user.roles?.[0]?.name || ""}
-                          data={[
-                            "MERCHANT",
-                            "SUPPLIER",
-                            "CATALOGUEADMIN",
-                            "FINANCE",
-                            "PRODUREMENT",
-                            "APPROVER",
-                            "USER",
-                          ]}
-                          disabled
-                          leftSection={<IconBuilding size={16} />}
-                        />
-                      </Grid.Col>
-                      <Grid.Col span={6}>
-                        <TextInput
-                          label="Location"
-                          value={editUser.address || ""}
-                          onChange={(e) =>
-                            setEditUser((prev) =>
-                              prev
-                                ? {
-                                    ...prev,
-                                    address: e.target.value,
-                                  }
-                                : null
-                            )
-                          }
-                          disabled={!editMode}
-                        />
-                      </Grid.Col>
-                      <Grid.Col span={6}>
-                        <TextInput
-                          label="Employee ID"
-                          value={user.user_code || ""}
-                          disabled
-                        />
-                      </Grid.Col>
-                      <Grid.Col span={6}>
-                        <TextInput
-                          label="Join Date"
-                          value={
-                            user.created_at
-                              ? new Date(user.created_at).toLocaleDateString(
-                                  "en-US",
-                                  {
-                                    year: "numeric",
-                                    month: "long",
-                                    day: "numeric",
-                                  }
-                                )
-                              : ""
-                          }
-                          disabled
-                          leftSection={<IconCalendar size={16} />}
-                        />
-                      </Grid.Col>
-                      <Grid.Col span={12}>
-                        <TextInput
-                          label="User Name"
-                          value={user.user_name || ""}
-                          disabled
-                          leftSection={<IconUser size={16} />}
-                        />
-                      </Grid.Col>
-                    </Grid>
-
-                    {editMode && (
-                      <Group justify="flex-end" mt="md">
-                        <Button
-                          variant="outline"
-                          onClick={() => {
-                            setEditMode(false);
-                            setEditUser({ ...user });
-                          }}
-                          type="button"
-                        >
-                          Cancel
-                        </Button>
-                        <Button type="submit" loading={editLoading}>
-                          Save Changes
-                        </Button>
-                      </Group>
-                    )}
-                  </form>
-                </Card>
-              </Grid.Col>
-            </Grid>
-          </Tabs.Panel>
-
+          <ProfileTabsList />
+          <ProfileTab
+            handleProfilePicUpload={handleProfilePicUpload}
+            uploadLoading={uploadLoading}
+            editMode={editMode}
+            setEditMode={setEditMode}
+            editUser={editUser}
+            setEditUser={setEditUser}
+            handleEdit={handleEdit}
+            editLoading={editLoading}
+          />
           <Tabs.Panel value="settings" pt="md">
             <Grid gutter="lg">
               <Grid.Col span={{ base: 12, md: 6 }}>
@@ -753,7 +487,6 @@ export default function ProfilePage() {
               </Grid.Col>
             </Grid>
           </Tabs.Panel>
-
           <Tabs.Panel value="notifications" pt="md">
             <Card shadow="sm" padding="lg" radius="md" withBorder>
               <Title order={4} mb="md">
@@ -846,7 +579,6 @@ export default function ProfilePage() {
               </Stack>
             </Card>
           </Tabs.Panel>
-
           <Tabs.Panel value="security" pt="md">
             <Grid gutter="lg">
               <Grid.Col span={{ base: 12, md: 6 }}>
@@ -961,6 +693,7 @@ export default function ProfilePage() {
               </Grid.Col>
             </Grid>
           </Tabs.Panel>
+          <RecommendedItemsTab />
         </Tabs>
       </Stack>
     </ContentContainer>

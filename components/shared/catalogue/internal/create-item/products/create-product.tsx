@@ -34,7 +34,9 @@ const CreateProductForm = ({
   handleImageUpload,
 }: {
   form: UseFormReturnType<CreateProductFormData>;
-  specificationsEditor: ReturnType<typeof import('@tiptap/react').useEditor> | null;
+  specificationsEditor: ReturnType<
+    typeof import("@tiptap/react").useEditor
+  > | null;
   setAttachments: (attachments: File[]) => void;
   attachments: File[];
   setImagePreview: (preview: string | null) => void;
@@ -209,7 +211,6 @@ const CreateProductForm = ({
                   key={form.key("suppliers")}
                   {...form.getInputProps("suppliers")}
                   searchable
-                  required
                 />
               </Stack>
             </Card>

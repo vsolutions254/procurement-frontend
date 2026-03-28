@@ -3,7 +3,7 @@ type CreateServiceFormData = {
   description: string;
   base_price: number;
   category_id: number;
-  supplier_ids: string[];
+  supplier_ids?: string[];
   tax_status: string;
   tax_type: string;
   tax_method: string;

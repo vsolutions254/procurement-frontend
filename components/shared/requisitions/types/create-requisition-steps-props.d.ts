@@ -1,0 +1,24 @@
+type CreateRequisitionStepsProps = {
+  active: number;
+  setActive: (v: number) => void;
+  useCustomDelivery: boolean;
+  setUseCustomDelivery: (v: boolean) => void;
+  users: User[];
+  selectedReceiver: string | null;
+  setSelectedReceiver: (v: string | null) => void;
+  selectedUser: User | undefined;
+  items: RequisitionItem[];
+  setAddItemModalOpen: (v: boolean) => void;
+  viewingService: string | null;
+  setViewingService: (v: string | null) => void;
+  updateItemQuantity: (id: string, quantity: number) => void;
+  removeItem: (id: string) => void;
+  setEditingService: (v: CartService) => void;
+  setEditServiceQuantity: (v: number) => void;
+  subtotal: number;
+  tax: number;
+  total: number;
+  setEditServiceFormData: (v: Record<string, CustomFieldValueType>) => void;
+  setEditServiceModalOpen: (v: boolean) => void;
+  requisitionForm: UseFormReturnType<CreateRequisitionFormData>;
+};

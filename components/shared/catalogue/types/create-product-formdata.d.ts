@@ -3,7 +3,7 @@ type CreateProductFormData = {
   base_price: number;
   product_name: string;
   categories: string[];
-  suppliers: string[];
+  suppliers?: string[];
   description: string;
   specifications: string;
   service_terms: string;

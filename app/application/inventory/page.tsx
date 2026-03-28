@@ -247,12 +247,14 @@ export default function InventoryPage() {
                     </Table.Td>
                     <Table.Td>
                       <Badge variant="light" size="sm">
-                        {typeof service.category === 'object' ? service.category?.name : service.category}
+                        {typeof service.category === "object"
+                          ? service.category?.name
+                          : service.category}
                       </Badge>
                     </Table.Td>
                     <Table.Td>
                       <Text size="sm">
-                        {service.sellable.suppliers[0].company_name}
+                        {service.sellable.suppliers[0]?.company_name}
                       </Text>
                     </Table.Td>
                     <Table.Td>

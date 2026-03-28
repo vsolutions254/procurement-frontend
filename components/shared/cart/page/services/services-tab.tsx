@@ -41,7 +41,8 @@ const ServiceView = ({
     (state) => state.services_cart.serviceDetails[item.service_id],
   );
   const serviceLoading = useAppSelector(
-    (state) => state.services_cart.serviceDetailsLoading[item.service_id] ?? true,
+    (state) =>
+      state.services_cart.serviceDetailsLoading[item.service_id] ?? true,
   );
 
   useEffect(() => {
@@ -51,7 +52,9 @@ const ServiceView = ({
   const handleQuantityChange = (value: string | number) => {
     const quantity = Number(value);
     if (quantity > 0)
-      dispatch(updateCartServiceQuantity({ service_id: item.service_id, quantity }));
+      dispatch(
+        updateCartServiceQuantity({ service_id: item.service_id, quantity }),
+      );
   };
 
   const handleRemove = () => {
@@ -72,7 +75,11 @@ const ServiceView = ({
       withBorder
       style={{ cursor: "pointer" }}
       onClick={() => {
-        setSelectedItem({ service, quantity: item.quantity, custom_values: item.custom_values });
+        setSelectedItem({
+          service,
+          quantity: item.quantity,
+          custom_values: item.custom_values,
+        });
         setEditModalOpen(true);
       }}
     >
@@ -88,7 +95,7 @@ const ServiceView = ({
             <div>
               {service.sellable?.suppliers?.[0] && (
                 <Text size="xs" c="dimmed" mt={4}>
-                  Supplier: {service.sellable.suppliers[0].company_name}
+                  Supplier: {service.sellable.suppliers[0]?.company_name}
                 </Text>
               )}
               {service.description && (
@@ -128,7 +135,8 @@ const ServiceView = ({
               </Text>
               {isTaxable && (
                 <Text size="xs" c="dimmed" mt={2}>
-                  +{formatCurrency(taxAmount)} tax ({isInclusive ? "incl." : "excl."})
+                  +{formatCurrency(taxAmount)} tax (
+                  {isInclusive ? "incl." : "excl."})
                 </Text>
               )}
             </div>

@@ -366,7 +366,6 @@ const CreateService = ({
                   key={form.key("supplier_ids")}
                   {...form.getInputProps("supplier_ids")}
                   searchable
-                  required
                 />
               </Stack>
             </Card>

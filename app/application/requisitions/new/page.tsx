@@ -6,17 +6,13 @@ import {
   Group,
   Button,
   Stack,
-  Title,
   Divider,
   Grid,
   TextInput,
   Select,
   Textarea,
-  Stepper,
   Table,
   Badge,
-  Paper,
-  Avatar,
   ActionIcon,
   NumberInput,
   Modal,
@@ -34,16 +30,15 @@ import TextAlign from "@tiptap/extension-text-align";
 import Superscript from "@tiptap/extension-superscript";
 import SubScript from "@tiptap/extension-subscript";
 import {
-  IconCheck,
-  IconFileText,
-  IconTrash,
-  IconPlus,
   IconSearch,
   IconPackage,
   IconPlane,
+  IconTrash,
+  IconPlus,
 } from "@tabler/icons-react";
 import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import type { RootState } from "@/lib/redux/store";
 import {
   getCartProducts,
   getCartProduct,
@@ -61,33 +56,26 @@ import {
 } from "@/lib/redux/features/services/cart/cartSlice";
 import { getProducts } from "@/lib/redux/features/products/productsSlice";
 import { getServices } from "@/lib/redux/features/services/servicesSlice";
+import { fetchUsers } from "@/lib/redux/features/merchants/merchantSlice";
 import {
   computeTax,
   computeTotal,
   formatCurrency,
 } from "@/components/shared/catalogue/services/utils/constants";
 import CustomFieldsForm from "@/components/shared/catalogue/custom-fields-form";
+import PageHeader from "@/components/shared/requisitions/create/page-header";
+import CreateRequisitionSteps from "../../../../components/shared/requisitions/create/steps/steps";
+import { useForm } from "@mantine/form";
+import { notifications } from "@mantine/notifications";
+import { ProcurementProcessor } from "@/lib/utils/procurement-requisitions-processor";
 
-type RequisitionItem = {
-  id: string;
-  name: string;
-  quantity: number;
-  price: number;
-  category?: string;
-  description?: string;
-  isNew?: boolean;
-  addToCatalogue?: boolean;
-};
-
-export default function CheckoutPage() {
+export default function CreateRequisition() {
   const { products: cartProducts, productDetails } = useAppSelector(
     (state) => state.products_cart,
   );
-  const {
-    services: cartServices,
-    serviceDetails,
-    servicesLoading,
-  } = useAppSelector((state) => state.services_cart);
+  const { services: cartServices, serviceDetails } = useAppSelector(
+    (state) => state.services_cart,
+  );
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -136,17 +124,30 @@ export default function CheckoutPage() {
     setItems([...productItems, ...serviceItems]);
   }, [cartProducts, cartServices, productDetails, serviceDetails]);
 
-  const { products: catalogueProducts, productsLoading: catalogueProductsLoading } = useAppSelector(
-    (state) => state.products,
-  );
-  const { services: catalogueServices, servicesLoading: catalogueServicesLoading } = useAppSelector(
-    (state) => state.services,
-  );
+  const {
+    products: catalogueProducts,
+    productsLoading: catalogueProductsLoading,
+  } = useAppSelector((state: RootState) => state.products);
+  const {
+    services: catalogueServices,
+    servicesLoading: catalogueServicesLoading,
+  } = useAppSelector((state: RootState) => state.services);
 
   const [internalSearch, setInternalSearch] = useState("");
-  const [selectedInternalItem, setSelectedInternalItem] = useState<{ id: number; type: "product" | "service" } | null>(null);
-  const [customFieldValues, setCustomFieldValues] = useState<Record<string, CustomFieldValueType>>({});
+  const [selectedInternalItem, setSelectedInternalItem] = useState<{
+    id: number;
+    type: "product" | "service";
+  } | null>(null);
+  const [customFieldValues, setCustomFieldValues] = useState<
+    Record<string, CustomFieldValueType>
+  >({});
   const [activeModalTab, setActiveModalTab] = useState<string | null>("new");
+
+  const { users } = useAppSelector((state: RootState) => state.merchants);
+
+  useEffect(() => {
+    dispatch(fetchUsers());
+  }, [dispatch]);
 
   const [active, setActive] = useState(0);
   const [selectedReceiver, setSelectedReceiver] = useState<string | null>(null);
@@ -201,39 +202,9 @@ export default function CheckoutPage() {
   const [itemType, setItemType] = useState<string | null>("goods");
   const [useCustomDelivery, setUseCustomDelivery] = useState(false);
 
-  const users = [
-    {
-      value: "john-smith",
-      label: "John Smith",
-      email: "john.smith@company.com",
-      department: "IT",
-      phone: "+254 700 123 456",
-    },
-    {
-      value: "sarah-johnson",
-      label: "Sarah Johnson",
-      email: "sarah.johnson@company.com",
-      department: "HR",
-      phone: "+254 700 234 567",
-    },
-    {
-      value: "mike-davis",
-      label: "Mike Davis",
-      email: "mike.davis@company.com",
-      department: "Operations",
-      phone: "+254 700 345 678",
-    },
-  ];
-
-  const projects = [
-    { value: "PROJ-2025-001", label: "Digital Transformation Initiative" },
-    { value: "PROJ-2025-002", label: "Office Modernization" },
-    { value: "PROJ-2025-003", label: "Remote Work Setup" },
-    { value: "PROJ-2025-004", label: "IT Infrastructure Upgrade" },
-    { value: "PROJ-2025-005", label: "Employee Wellness Program" },
-  ];
-
-  const selectedUser = users.find((user) => user.value === selectedReceiver);
+  const selectedUser = users.find(
+    (user) => user.id.toString() === selectedReceiver,
+  );
 
   const updateItemQuantity = async (id: string, quantity: number) => {
     // Update local state immediately for UI responsiveness
@@ -293,9 +264,13 @@ export default function CheckoutPage() {
 
   const [addItemLoading, setAddItemLoading] = useState(false);
   const [editServiceModalOpen, setEditServiceModalOpen] = useState(false);
-  const [editingService, setEditingService] = useState<CartService | null>(null);
+  const [editingService, setEditingService] = useState<CartService | null>(
+    null,
+  );
   const [editServiceQuantity, setEditServiceQuantity] = useState(1);
-  const [editServiceFormData, setEditServiceFormData] = useState<Record<string, CustomFieldValueType>>({});
+  const [editServiceFormData, setEditServiceFormData] = useState<
+    Record<string, CustomFieldValueType>
+  >({});
   const [editServiceLoading, setEditServiceLoading] = useState(false);
 
   const addItem = async () => {
@@ -303,13 +278,26 @@ export default function CheckoutPage() {
       setAddItemLoading(true);
       try {
         if (selectedInternalItem.type === "product") {
-          await dispatch(addProductToCart({ product_id: selectedInternalItem.id, quantity: itemQuantity })).unwrap();
+          await dispatch(
+            addProductToCart({
+              product_id: selectedInternalItem.id,
+              quantity: itemQuantity,
+            }),
+          ).unwrap();
           await dispatch(getCartProduct(selectedInternalItem.id));
         } else {
-          const custom_values: CustomFieldValue[] = Object.entries(customFieldValues)
+          const custom_values: CustomFieldValue[] = Object.entries(
+            customFieldValues,
+          )
             .filter(([, v]) => v !== "" && v !== null && v !== undefined)
             .map(([field_id, value]) => ({ field_id, value }));
-          await dispatch(addServiceToCart({ service_id: selectedInternalItem.id, quantity: itemQuantity, custom_values })).unwrap();
+          await dispatch(
+            addServiceToCart({
+              service_id: selectedInternalItem.id,
+              quantity: itemQuantity,
+              custom_values,
+            }),
+          ).unwrap();
           await dispatch(getCartService(selectedInternalItem.id));
         }
         setAddItemModalOpen(false);
@@ -338,7 +326,14 @@ export default function CheckoutPage() {
         setAddItemModalOpen(false);
         setSelectedCatalogueItem(null);
         setItemQuantity(1);
-        setNewItemForm({ name: "", category: "", price: 0, description: "", specifications: "", addToCatalogue: false });
+        setNewItemForm({
+          name: "",
+          category: "",
+          price: 0,
+          description: "",
+          specifications: "",
+          addToCatalogue: false,
+        });
         setModalAttachments([]);
         setItemType("goods");
       }
@@ -369,732 +364,115 @@ export default function CheckoutPage() {
 
   const total = subtotal;
 
+  const requisitionForm = useForm({
+    mode: "controlled",
+    initialValues: {
+      title: "",
+      priority: "medium",
+      justification: "",
+      cost_center_id: null,
+      project_id: null,
+      location_id: null,
+      custom_receiver_name: "",
+      custom_receiver_phone: "",
+      custom_receiver_email: "",
+      custom_delivery_point: "",
+      custom_delivery_address: "",
+      delivery_date: "",
+      delivery_instructions: "",
+    },
+    validate: {
+      title: (value) => (value.trim().length > 0 ? null : "Title is required"),
+
+      priority: (value) =>
+        ["low", "medium", "high", "urgent"].includes(value)
+          ? null
+          : "Invalid priority",
+      delivery_date: (value) => {
+        if (!value) return "Delivery date is required";
+      },
+    },
+  });
+
+  // Step-specific validation
+  const validateCurrentStep = (step: number) => {
+    const errors: Record<string, string> = {};
+
+    if (step === 0) {
+      // Request Details step - validate title and priority
+      if (!requisitionForm.values.title.trim()) {
+        errors.title = "Title is required";
+      }
+      if (
+        !["low", "medium", "high", "urgent"].includes(
+          requisitionForm.values.priority,
+        )
+      ) {
+        errors.priority = "Invalid priority";
+      }
+    } else if (step === 1) {
+      // Delivery Details step
+      if (useCustomDelivery) {
+        // Custom delivery - validate custom receiver fields
+        if (!requisitionForm.values.custom_receiver_name?.trim()) {
+          errors.custom_receiver_name = "Receiver name is required";
+        }
+        if (!requisitionForm.values.custom_receiver_phone?.trim()) {
+          errors.custom_receiver_phone = "Receiver phone is required";
+        }
+        if (!requisitionForm.values.custom_receiver_email?.trim()) {
+          errors.custom_receiver_email = "Receiver email is required";
+        }
+        if (!requisitionForm.values.custom_delivery_address?.trim()) {
+          errors.custom_delivery_address = "Delivery address is required";
+        }
+      } else {
+        // Standard delivery - validate delivery date and location
+        if (!requisitionForm.values.location_id) {
+          errors.location_id = "Delivery location is required";
+        }
+        if (!requisitionForm.values.delivery_date) {
+          errors.delivery_date = "Delivery date is required";
+        }
+      }
+    }
+    // Step 2 (Review & Submit) doesn't need validation as it's just a summary
+
+    return {
+      hasErrors: Object.keys(errors).length > 0,
+      errors,
+    };
+  };
+
   return (
     <Stack gap="lg">
-      <div>
-        <Title order={2} mb="xs">
-          Create Requisition
-        </Title>
-        <Text c="dimmed" size="sm">
-          Complete the form to submit your requisition for approval
-        </Text>
-      </div>
+      <PageHeader />
 
       <Card shadow="sm" padding="lg" radius="md" withBorder>
-        <Stepper active={active} onStepClick={setActive}>
-          <Stepper.Step label="Request Details" description="Basic information">
-            <Stack gap="md" mt="xl">
-              <Grid gutter="md">
-                <Grid.Col span={{ base: 12, md: 6 }}>
-                  <TextInput
-                    label="Requisition Title"
-                    placeholder="e.g., Q1 Office Equipment"
-                    required
-                  />
-                </Grid.Col>
-                <Grid.Col span={{ base: 12, md: 6 }}>
-                  <Select
-                    label="Priority"
-                    placeholder="Select priority"
-                    data={["Low", "Medium", "High", "Urgent"]}
-                    required
-                  />
-                </Grid.Col>
-                <Grid.Col span={{ base: 12, md: 6 }}>
-                  <Select
-                    label="Cost Center"
-                    placeholder="Select cost center"
-                    data={["Marketing", "IT", "Operations", "HR", "Finance"]}
-                    required
-                  />
-                </Grid.Col>
-                <Grid.Col span={{ base: 12, md: 6 }}>
-                  <Select
-                    label="Project (Optional)"
-                    placeholder="Select a project"
-                    data={projects}
-                    clearable
-                  />
-                </Grid.Col>
-                <Grid.Col span={12}>
-                  <Textarea
-                    label="Business Justification"
-                    placeholder="Explain why these items are needed..."
-                    rows={4}
-                    required
-                  />
-                </Grid.Col>
-              </Grid>
-            </Stack>
-          </Stepper.Step>
-
-          <Stepper.Step
-            label="Delivery Details"
-            description="Shipping information"
-          >
-            <Stack gap="md" mt="xl">
-              <Grid gutter="md">
-                <Grid.Col span={12}>
-                  <Checkbox
-                    label="Use custom delivery information"
-                    checked={useCustomDelivery}
-                    onChange={(e) =>
-                      setUseCustomDelivery(e.currentTarget.checked)
-                    }
-                  />
-                </Grid.Col>
-                {!useCustomDelivery && (
-                  <>
-                    <Grid.Col span={{ base: 12, md: 6 }}>
-                      <Select
-                        label="Delivery Location"
-                        placeholder="Select location"
-                        data={[
-                          "Main Office - Building A",
-                          "Main Office - Building B",
-                          "Warehouse",
-                          "Remote Office",
-                        ]}
-                        required
-                      />
-                    </Grid.Col>
-                    <Grid.Col span={{ base: 12, md: 6 }}>
-                      <TextInput
-                        label="Requested Delivery Date"
-                        type="date"
-                        required
-                      />
-                    </Grid.Col>
-                    <Grid.Col span={12}>
-                      <Select
-                        label="Receiver"
-                        placeholder="Select receiver"
-                        data={users.map((user) => ({
-                          value: user.value,
-                          label: user.label,
-                        }))}
-                        value={selectedReceiver}
-                        onChange={setSelectedReceiver}
-                        required
-                      />
-                    </Grid.Col>
-                    {selectedUser && (
-                      <Grid.Col span={12}>
-                        <Card shadow="sm" padding="md" radius="md" withBorder>
-                          <Group gap="md">
-                            <Avatar size={40} radius="xl" color="cyan">
-                              {selectedUser.label
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")}
-                            </Avatar>
-                            <div style={{ flex: 1 }}>
-                              <Text fw={500}>{selectedUser.label}</Text>
-                              <Text size="sm" c="dimmed">
-                                {selectedUser.department}
-                              </Text>
-                              <Text size="sm" c="dimmed">
-                                {selectedUser.email}
-                              </Text>
-                              <Text size="sm" c="dimmed">
-                                {selectedUser.phone}
-                              </Text>
-                            </div>
-                          </Group>
-                        </Card>
-                      </Grid.Col>
-                    )}
-                    <Grid.Col span={12}>
-                      <Textarea
-                        label="Special Delivery Instructions (Optional)"
-                        placeholder="Any special requirements..."
-                        rows={3}
-                      />
-                    </Grid.Col>
-                  </>
-                )}
-                {useCustomDelivery && (
-                  <>
-                    <Grid.Col span={{ base: 12, md: 6 }}>
-                      <TextInput
-                        label="Receiver Name"
-                        placeholder="Enter receiver name"
-                        required
-                      />
-                    </Grid.Col>
-                    <Grid.Col span={{ base: 12, md: 6 }}>
-                      <TextInput
-                        label="Receiver Phone"
-                        placeholder="Enter phone number"
-                        required
-                      />
-                    </Grid.Col>
-                    <Grid.Col span={{ base: 12, md: 6 }}>
-                      <TextInput
-                        label="Receiver Email"
-                        placeholder="Enter email address"
-                        required
-                      />
-                    </Grid.Col>
-                    <Grid.Col span={{ base: 12, md: 6 }}>
-                      <TextInput
-                        label="Department/Office"
-                        placeholder="Enter department or office"
-                      />
-                    </Grid.Col>
-                    <Grid.Col span={12}>
-                      <Textarea
-                        label="Delivery Address"
-                        placeholder="Enter complete delivery address"
-                        rows={2}
-                        required
-                      />
-                    </Grid.Col>
-                    <Grid.Col span={{ base: 12, md: 6 }}>
-                      <TextInput
-                        label="Requested Delivery Date"
-                        type="date"
-                        required
-                      />
-                    </Grid.Col>
-                    <Grid.Col span={12}>
-                      <Textarea
-                        label="Special Delivery Instructions (Optional)"
-                        placeholder="Any special requirements..."
-                        rows={3}
-                      />
-                    </Grid.Col>
-                  </>
-                )}
-              </Grid>
-            </Stack>
-          </Stepper.Step>
-
-          <Stepper.Step label="Review & Submit" description="Confirm details">
-            <Stack gap="md" mt="xl">
-              <Paper p="md" withBorder>
-                <Text fw={600} mb="md">
-                  Requisition Summary
-                </Text>
-                <Grid gutter="sm">
-                  <Grid.Col span={6}>
-                    <Text size="xs" c="dimmed">
-                      Title
-                    </Text>
-                    <Text size="sm">Q1 Office Equipment</Text>
-                  </Grid.Col>
-                  <Grid.Col span={6}>
-                    <Text size="xs" c="dimmed">
-                      Priority
-                    </Text>
-                    <Badge size="sm" color="orange">
-                      High
-                    </Badge>
-                  </Grid.Col>
-                  <Grid.Col span={6}>
-                    <Text size="xs" c="dimmed">
-                      Cost Center
-                    </Text>
-                    <Text size="sm">IT</Text>
-                  </Grid.Col>
-                  <Grid.Col span={6}>
-                    <Text size="xs" c="dimmed">
-                      Delivery Location
-                    </Text>
-                    <Text size="sm">Main Office - Building A</Text>
-                  </Grid.Col>
-                </Grid>
-              </Paper>
-
-              <Card shadow="sm" padding="md" radius="md" withBorder>
-                <Group justify="space-between" mb="md">
-                  <Text fw={600}>Items ({items.length})</Text>
-                  <Button
-                    size="xs"
-                    leftSection={<IconPlus size={14} />}
-                    onClick={() => setAddItemModalOpen(true)}
-                  >
-                    Add Item
-                  </Button>
-                </Group>
-
-                {viewingService &&
-                  (() => {
-                    const service = items.find(
-                      (item) => item.id === viewingService,
-                    );
-                    if (!service) return null;
-                    return (
-                      <Paper
-                        p="md"
-                        withBorder
-                        mb="md"
-                        style={{ backgroundColor: "#f8f9fa" }}
-                      >
-                        <Group justify="space-between" mb="md">
-                          <Text fw={600}>Booking Details - {service.name}</Text>
-                          <Button
-                            size="xs"
-                            variant="outline"
-                            onClick={() => setViewingService(null)}
-                          >
-                            Back to Items
-                          </Button>
-                        </Group>
-                        {service.name.includes("Flight") && (
-                          <Grid gutter="md">
-                            <Grid.Col span={6}>
-                              <Text size="xs" c="dimmed">
-                                From
-                              </Text>
-                              <Text size="sm" fw={500}>
-                                Nairobi (NBO)
-                              </Text>
-                            </Grid.Col>
-                            <Grid.Col span={6}>
-                              <Text size="xs" c="dimmed">
-                                To
-                              </Text>
-                              <Text size="sm" fw={500}>
-                                Mombasa (MBA)
-                              </Text>
-                            </Grid.Col>
-                            <Grid.Col span={6}>
-                              <Text size="xs" c="dimmed">
-                                Departure
-                              </Text>
-                              <Text size="sm" fw={500}>
-                                Jan 25, 2025 - 09:00 AM
-                              </Text>
-                            </Grid.Col>
-                            <Grid.Col span={6}>
-                              <Text size="xs" c="dimmed">
-                                Return
-                              </Text>
-                              <Text size="sm" fw={500}>
-                                Jan 27, 2025 - 06:00 PM
-                              </Text>
-                            </Grid.Col>
-                            <Grid.Col span={6}>
-                              <Text size="xs" c="dimmed">
-                                Class
-                              </Text>
-                              <Badge size="sm" variant="light">
-                                Business
-                              </Badge>
-                            </Grid.Col>
-                            <Grid.Col span={6}>
-                              <Text size="xs" c="dimmed">
-                                Passengers
-                              </Text>
-                              <Text size="sm" fw={500}>
-                                1 Adult
-                              </Text>
-                            </Grid.Col>
-                          </Grid>
-                        )}
-                        {service.name.includes("Hotel") && (
-                          <Grid gutter="md">
-                            <Grid.Col span={6}>
-                              <Text size="xs" c="dimmed">
-                                Hotel
-                              </Text>
-                              <Text size="sm" fw={500}>
-                                Serena Beach Resort
-                              </Text>
-                            </Grid.Col>
-                            <Grid.Col span={6}>
-                              <Text size="xs" c="dimmed">
-                                Location
-                              </Text>
-                              <Text size="sm" fw={500}>
-                                Mombasa, Kenya
-                              </Text>
-                            </Grid.Col>
-                            <Grid.Col span={6}>
-                              <Text size="xs" c="dimmed">
-                                Check-in
-                              </Text>
-                              <Text size="sm" fw={500}>
-                                Jan 25, 2025
-                              </Text>
-                            </Grid.Col>
-                            <Grid.Col span={6}>
-                              <Text size="xs" c="dimmed">
-                                Check-out
-                              </Text>
-                              <Text size="sm" fw={500}>
-                                Jan 28, 2025
-                              </Text>
-                            </Grid.Col>
-                            <Grid.Col span={6}>
-                              <Text size="xs" c="dimmed">
-                                Room Type
-                              </Text>
-                              <Badge size="sm" variant="light">
-                                Deluxe Ocean View
-                              </Badge>
-                            </Grid.Col>
-                            <Grid.Col span={6}>
-                              <Text size="xs" c="dimmed">
-                                Guests
-                              </Text>
-                              <Text size="sm" fw={500}>
-                                2 Adults
-                              </Text>
-                            </Grid.Col>
-                            <Grid.Col span={12}>
-                              <Text size="xs" c="dimmed">
-                                Duration
-                              </Text>
-                              <Text size="sm" fw={500}>
-                                3 nights
-                              </Text>
-                            </Grid.Col>
-                          </Grid>
-                        )}
-                        {service.name.includes("Car") && (
-                          <Grid gutter="md">
-                            <Grid.Col span={6}>
-                              <Text size="xs" c="dimmed">
-                                Vehicle
-                              </Text>
-                              <Text size="sm" fw={500}>
-                                Toyota Camry
-                              </Text>
-                            </Grid.Col>
-                            <Grid.Col span={6}>
-                              <Text size="xs" c="dimmed">
-                                Category
-                              </Text>
-                              <Badge size="sm" variant="light">
-                                Mid-size
-                              </Badge>
-                            </Grid.Col>
-                            <Grid.Col span={6}>
-                              <Text size="xs" c="dimmed">
-                                Pickup Date
-                              </Text>
-                              <Text size="sm" fw={500}>
-                                Jan 25, 2025 - 09:00 AM
-                              </Text>
-                            </Grid.Col>
-                            <Grid.Col span={6}>
-                              <Text size="xs" c="dimmed">
-                                Return Date
-                              </Text>
-                              <Text size="sm" fw={500}>
-                                Jan 30, 2025 - 09:00 AM
-                              </Text>
-                            </Grid.Col>
-                            <Grid.Col span={6}>
-                              <Text size="xs" c="dimmed">
-                                Pickup Location
-                              </Text>
-                              <Text size="sm" fw={500}>
-                                Jomo Kenyatta Airport
-                              </Text>
-                            </Grid.Col>
-                            <Grid.Col span={6}>
-                              <Text size="xs" c="dimmed">
-                                Duration
-                              </Text>
-                              <Text size="sm" fw={500}>
-                                5 days
-                              </Text>
-                            </Grid.Col>
-                          </Grid>
-                        )}
-                      </Paper>
-                    );
-                  })()}
-
-                {!viewingService && (
-                  <Tabs defaultValue="products">
-                    <Tabs.List mb="md">
-                      <Tabs.Tab value="products" leftSection={<IconPackage size={14} />}>
-                        Products ({cartProducts.length})
-                      </Tabs.Tab>
-                      <Tabs.Tab value="services" leftSection={<IconPlane size={14} />}>
-                        Services ({cartServices.length})
-                      </Tabs.Tab>
-                      <Tabs.Tab value="recommended" leftSection={<IconSearch size={14} />}>
-                        Recommended Items
-                      </Tabs.Tab>
-                    </Tabs.List>
-
-                    <Tabs.Panel value="products">
-                      {servicesLoading ? (
-                        <Group justify="center" p="md"><Loader size="sm" /></Group>
-                      ) : cartProducts.length === 0 ? (
-                        <Text c="dimmed" size="sm" ta="center" py="md">No products in cart.</Text>
-                      ) : (
-                        <Table>
-                          <Table.Thead>
-                            <Table.Tr>
-                              <Table.Th>Item</Table.Th>
-                              <Table.Th>Qty</Table.Th>
-                              <Table.Th>Unit Price</Table.Th>
-                              <Table.Th>Tax</Table.Th>
-                              <Table.Th>Total</Table.Th>
-                              <Table.Th></Table.Th>
-                            </Table.Tr>
-                          </Table.Thead>
-                          <Table.Tbody>
-                            {cartProducts.map((raw) => {
-                              const p = productDetails[raw.product_id];
-                              const id = `product-${raw.product_id}`;
-                              const base = p ? Number(p.base_price) : 0;
-                              const taxAmt = p ? computeTax(p) : 0;
-                              const lineTotal = p ? computeTotal(p) * raw.quantity : 0;
-                              const isInclusive = p?.sellable?.tax_type === "inclusive";
-                              const isTaxable = p?.sellable?.tax_status === "taxable" && taxAmt > 0;
-                              return (
-                                <Table.Tr key={id}>
-                                  <Table.Td>
-                                    <Text size="sm" fw={500}>{p?.name ?? `Product #${raw.product_id}`}</Text>
-                                    <Text size="xs" c="dimmed">{p?.category?.name}</Text>
-                                  </Table.Td>
-                                  <Table.Td>
-                                    <NumberInput
-                                      value={raw.quantity}
-                                      onChange={(v) => updateItemQuantity(id, Number(v) || 1)}
-                                      min={1} max={99} size="xs" w={80}
-                                    />
-                                  </Table.Td>
-                                  <Table.Td>{formatCurrency(base)}</Table.Td>
-                                  <Table.Td>
-                                    {isTaxable ? (
-                                      <Stack gap={2}>
-                                        <Text size="xs" fw={500}>{formatCurrency(taxAmt * raw.quantity)}</Text>
-                                        <Badge size="xs" variant="dot" color={isInclusive ? "teal" : "orange"}>
-                                          {isInclusive ? "Inclusive" : "Exclusive"}
-                                        </Badge>
-                                      </Stack>
-                                    ) : (
-                                      <Text size="xs" c="dimmed">—</Text>
-                                    )}
-                                  </Table.Td>
-                                  <Table.Td fw={600}>{formatCurrency(lineTotal)}</Table.Td>
-                                  <Table.Td>
-                                    <ActionIcon color="red" variant="subtle" onClick={() => removeItem(id)}>
-                                      <IconTrash size={16} />
-                                    </ActionIcon>
-                                  </Table.Td>
-                                </Table.Tr>
-                              );
-                            })}
-                          </Table.Tbody>
-                        </Table>
-                      )}
-                    </Tabs.Panel>
-
-                    <Tabs.Panel value="services">
-                      {servicesLoading ? (
-                        <Group justify="center" p="md"><Loader size="sm" /></Group>
-                      ) : cartServices.length === 0 ? (
-                        <Text c="dimmed" size="sm" ta="center" py="md">No services in cart.</Text>
-                      ) : (
-                        <Table>
-                          <Table.Thead>
-                            <Table.Tr>
-                              <Table.Th>Service</Table.Th>
-                              <Table.Th>Qty</Table.Th>
-                              <Table.Th>Unit Price</Table.Th>
-                              <Table.Th>Tax</Table.Th>
-                              <Table.Th>Total</Table.Th>
-                              <Table.Th></Table.Th>
-                            </Table.Tr>
-                          </Table.Thead>
-                          <Table.Tbody>
-                            {cartServices.map((raw) => {
-                              const s = serviceDetails[raw.service_id];
-                              const id = `service-${raw.service_id}`;
-                              const base = s ? Number(s.base_price) : 0;
-                              const taxAmt = s ? computeTax(s) : 0;
-                              const lineTotal = s ? computeTotal(s) * raw.quantity : 0;
-                              const isInclusive = s?.sellable?.tax_type === "inclusive";
-                              const isTaxable = s?.sellable?.tax_status === "taxable" && taxAmt > 0;
-                              const hasCustomFields = (s?.category?.custom_fields?.length ?? 0) > 0;
-                              return (
-                                <Table.Tr
-                                  key={id}
-                                  style={{ cursor: hasCustomFields ? "pointer" : undefined }}
-                                  onClick={() => {
-                                    if (!s || !hasCustomFields) return;
-                                    setEditingService({ service: s, quantity: raw.quantity, custom_values: raw.custom_values ?? [] });
-                                    setEditServiceQuantity(raw.quantity);
-                                    const record: Record<string, CustomFieldValueType> = {};
-                                    (raw.custom_values ?? []).forEach(({ field_id, value }) => { record[field_id] = value; });
-                                    setEditServiceFormData(record);
-                                    setEditServiceModalOpen(true);
-                                  }}
-                                >
-                                  <Table.Td>
-                                    <Text size="sm" fw={500}>{s?.name ?? `Service #${raw.service_id}`}</Text>
-                                    <Group gap={4} mt={2}>
-                                      <Text size="xs" c="dimmed">{s?.category?.name}</Text>
-                                      {hasCustomFields && (
-                                        <Badge size="xs" variant="light" color="blue">Click to edit</Badge>
-                                      )}
-                                    </Group>
-                                  </Table.Td>
-                                  <Table.Td>
-                                    <NumberInput
-                                      value={raw.quantity}
-                                      onChange={(v) => updateItemQuantity(id, Number(v) || 1)}
-                                      min={1} max={99} size="xs" w={80}
-                                      onClick={(e) => e.stopPropagation()}
-                                    />
-                                  </Table.Td>
-                                  <Table.Td>{formatCurrency(base)}</Table.Td>
-                                  <Table.Td>
-                                    {isTaxable ? (
-                                      <Stack gap={2}>
-                                        <Text size="xs" fw={500}>{formatCurrency(taxAmt * raw.quantity)}</Text>
-                                        <Badge size="xs" variant="dot" color={isInclusive ? "teal" : "orange"}>
-                                          {isInclusive ? "Inclusive" : "Exclusive"}
-                                        </Badge>
-                                      </Stack>
-                                    ) : (
-                                      <Text size="xs" c="dimmed">—</Text>
-                                    )}
-                                  </Table.Td>
-                                  <Table.Td fw={600}>{formatCurrency(lineTotal)}</Table.Td>
-                                  <Table.Td>
-                                    <ActionIcon color="red" variant="subtle" onClick={(e) => { e.stopPropagation(); removeItem(id); }}>
-                                      <IconTrash size={16} />
-                                    </ActionIcon>
-                                  </Table.Td>
-                                </Table.Tr>
-                              );
-                            })}
-                          </Table.Tbody>
-                        </Table>
-                      )}
-                    </Tabs.Panel>
-
-                    <Tabs.Panel value="recommended">
-                      <Table highlightOnHover>
-                        <Table.Thead>
-                          <Table.Tr>
-                            <Table.Th>Item</Table.Th>
-                            <Table.Th>Category</Table.Th>
-                            <Table.Th>Price</Table.Th>
-                            <Table.Th></Table.Th>
-                          </Table.Tr>
-                        </Table.Thead>
-                        <Table.Tbody>
-                          {[
-                            { id: "REC-001", name: "Wireless Keyboard", category: "IT Equipment", price: 4500 },
-                            { id: "REC-002", name: "USB-C Hub", category: "IT Equipment", price: 3200 },
-                            { id: "REC-003", name: "Desk Organizer Set", category: "Office Supplies", price: 1800 },
-                            { id: "REC-004", name: "Monitor Stand", category: "Furniture", price: 6500 },
-                          ].map((rec) => (
-                            <Table.Tr key={rec.id}>
-                              <Table.Td>
-                                <Text size="sm" fw={500}>{rec.name}</Text>
-                                <Text size="xs" c="dimmed">{rec.id}</Text>
-                              </Table.Td>
-                              <Table.Td>
-                                <Badge variant="light" size="sm">{rec.category}</Badge>
-                              </Table.Td>
-                              <Table.Td>
-                                <Text size="sm" fw={600} c="cyan">{formatCurrency(rec.price)}</Text>
-                              </Table.Td>
-                              <Table.Td>
-                                <Button size="xs" variant="light" leftSection={<IconPlus size={12} />}>
-                                  Add
-                                </Button>
-                              </Table.Td>
-                            </Table.Tr>
-                          ))}
-                        </Table.Tbody>
-                      </Table>
-                    </Tabs.Panel>
-                  </Tabs>
-                )}
-
-                {!viewingService && (
-                  <>
-                    <Divider my="md" />
-                    <Stack gap="xs">
-                      <Group justify="space-between">
-                        <Text size="sm">Subtotal</Text>
-                        <Text size="sm" fw={500}>
-                          {formatCurrency(subtotal)}
-                        </Text>
-                      </Group>
-                      <Group justify="space-between">
-                        <Text size="sm">Tax</Text>
-                        <Text size="sm" fw={500}>
-                          {formatCurrency(tax)}
-                        </Text>
-                      </Group>
-                      <Divider />
-                      <Group justify="space-between">
-                        <Text size="md" fw={600}>
-                          Total
-                        </Text>
-                        <Text size="lg" fw={700} c="cyan">
-                          {formatCurrency(total)}
-                        </Text>
-                      </Group>
-                    </Stack>
-                  </>
-                )}
-              </Card>
-            </Stack>
-          </Stepper.Step>
-
-          <Stepper.Completed>
-            <Stack align="center" gap="md" py="xl">
-              <div
-                style={{
-                  width: 80,
-                  height: 80,
-                  borderRadius: "50%",
-                  backgroundColor: "var(--mantine-color-green-6)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <IconCheck size={40} color="white" />
-              </div>
-              <Title order={3}>Requisition Submitted!</Title>
-              <Text c="dimmed" ta="center" maw={500}>
-                Your requisition has been submitted successfully and is now
-                pending approval from your line manager.
-              </Text>
-              <Paper p="md" withBorder>
-                <Group gap="xs">
-                  <IconFileText size={20} />
-                  <div>
-                    <Text size="xs" c="dimmed">
-                      Requisition ID
-                    </Text>
-                    <Text size="sm" fw={600}>
-                      REQ-2025-001
-                    </Text>
-                  </div>
-                </Group>
-              </Paper>
-              <Group gap="md" mt="md">
-                <Button
-                  variant="light"
-                  component="a"
-                  href="/application/requisitions"
-                >
-                  View My Requisitions
-                </Button>
-                <Button variant="filled" component="a" href="/catalogue">
-                  Back to Catalogue
-                </Button>
-              </Group>
-            </Stack>
-          </Stepper.Completed>
-        </Stepper>
+        <CreateRequisitionSteps
+          active={active}
+          setActive={setActive}
+          useCustomDelivery={useCustomDelivery}
+          setUseCustomDelivery={setUseCustomDelivery}
+          users={users}
+          selectedReceiver={selectedReceiver}
+          setSelectedReceiver={setSelectedReceiver}
+          selectedUser={selectedUser}
+          items={items}
+          setAddItemModalOpen={setAddItemModalOpen}
+          viewingService={viewingService}
+          setViewingService={setViewingService}
+          updateItemQuantity={updateItemQuantity}
+          removeItem={removeItem}
+          setEditingService={setEditingService}
+          setEditServiceQuantity={setEditServiceQuantity}
+          subtotal={subtotal}
+          tax={tax}
+          total={total}
+          setEditServiceFormData={setEditServiceFormData}
+          setEditServiceModalOpen={setEditServiceModalOpen}
+          requisitionForm={requisitionForm}
+        />
 
         {active < 3 && (
           <Group justify="space-between" mt="xl">
@@ -1105,7 +483,116 @@ export default function CheckoutPage() {
             >
               Back
             </Button>
-            <Button onClick={() => setActive(active + 1)}>
+            <Button
+              onClick={() => {
+                if (active === 2) {
+                  // Final submission - validate all steps first
+                  const allValidations = [0, 1, 2].map((step) =>
+                    validateCurrentStep(step),
+                  );
+                  const hasAnyErrors = allValidations.some((v) => v.hasErrors);
+
+                  if (hasAnyErrors) {
+                    const allErrors = allValidations.flatMap((v) =>
+                      Object.values(v.errors),
+                    );
+                    notifications.show({
+                      title: "Validation Error",
+                      message:
+                        allErrors[0] || "Please fill all required fields",
+                      color: "red",
+                    });
+                    return;
+                  }
+
+                  // Process the requisition
+                  requisitionForm.onSubmit(async (values) => {
+                    try {
+                      // Prepare requisition data
+                      const requisitionData = {
+                        ...values,
+                        items: items.map((item) => ({
+                          id: item.id,
+                          name: item.name,
+                          quantity: item.quantity,
+                          price: item.price,
+                          category: item.category,
+                          description: item.description,
+                          custom_values: item.custom_values,
+                          isNew: item.isNew,
+                          addToCatalogue: item.addToCatalogue,
+                        })),
+                        cartProducts,
+                        cartServices,
+                        useCustomDelivery,
+                        selectedUser,
+                        totals: {
+                          subtotal,
+                          tax,
+                          total,
+                        },
+                      };
+
+                      console.log("📋 Requisition Data:", requisitionData);
+
+                      const processedItems = items.map((item) => ({
+                        id: item.id,
+                        name: item.name,
+                        category: item.category || "Unknown",
+                        quantity: item.quantity,
+                        unitPrice: item.price,
+                        totalPrice: item.price * item.quantity,
+                      }));
+
+                      const procurementResult =
+                        await ProcurementProcessor.processRequisition(
+                          `REQ-${Date.now()}`,
+                          processedItems,
+                        );
+
+                      console.log(
+                        "🔄 Procurement Processing Result:",
+                        procurementResult,
+                      );
+
+                      // Show success notification
+                      notifications.show({
+                        title: "Requisition Submitted Successfully",
+                        message: `Requisition created with ${procurementResult.inStockItems.length} items available in stock and ${procurementResult.outOfStockItems.length} items requiring RFQ.`,
+                        color: "green",
+                      });
+
+                      // Move to completion step
+                      setActive(3);
+                    } catch (error) {
+                      console.error("Failed to process requisition:", error);
+                      notifications.show({
+                        title: "Submission Failed",
+                        message:
+                          "An error occurred while processing your requisition. Please try again.",
+                        color: "red",
+                      });
+                    }
+                  })();
+                } else {
+                  const validation = validateCurrentStep(active);
+
+                  if (validation.hasErrors) {
+                    const firstError = Object.values(validation.errors)[0];
+
+                    notifications.show({
+                      title: "Validation Error",
+                      message: firstError || "Please fill all required fields",
+                      color: "red",
+                    });
+
+                    return;
+                  }
+
+                  setActive(active + 1);
+                }
+              }}
+            >
               {active === 2 ? "Submit Requisition" : "Next Step"}
             </Button>
           </Group>
@@ -1128,7 +615,8 @@ export default function CheckoutPage() {
               value={editServiceQuantity}
               onChange={(v) => setEditServiceQuantity(Number(v) || 1)}
             />
-            {(editingService.service.category.custom_fields?.length ?? 0) > 0 && (
+            {(editingService.service.category.custom_fields?.length ?? 0) >
+              0 && (
               <>
                 <Divider label="Service Details" labelPosition="left" />
                 <CustomFieldsForm
@@ -1139,20 +627,31 @@ export default function CheckoutPage() {
               </>
             )}
             <Group justify="flex-end" mt="md">
-              <Button variant="outline" onClick={() => setEditServiceModalOpen(false)}>Cancel</Button>
+              <Button
+                variant="outline"
+                onClick={() => setEditServiceModalOpen(false)}
+              >
+                Cancel
+              </Button>
               <Button
                 loading={editServiceLoading}
                 onClick={async () => {
                   setEditServiceLoading(true);
                   try {
-                    const custom_values: CustomFieldValue[] = Object.entries(editServiceFormData)
-                      .filter(([, v]) => v !== "" && v !== null && v !== undefined)
+                    const custom_values: CustomFieldValue[] = Object.entries(
+                      editServiceFormData,
+                    )
+                      .filter(
+                        ([, v]) => v !== "" && v !== null && v !== undefined,
+                      )
                       .map(([field_id, value]) => ({ field_id, value }));
-                    await dispatch(updateCartService({
-                      service_id: editingService.service.id,
-                      quantity: editServiceQuantity,
-                      custom_values,
-                    })).unwrap();
+                    await dispatch(
+                      updateCartService({
+                        service_id: editingService.service.id,
+                        quantity: editServiceQuantity,
+                        custom_values,
+                      }),
+                    ).unwrap();
                     setEditServiceModalOpen(false);
                   } finally {
                     setEditServiceLoading(false);
@@ -1178,7 +677,9 @@ export default function CheckoutPage() {
           onChange={(value) => {
             setActiveModalTab(value);
             setSelectedInternalItem(null);
-            setSelectedCatalogueItem(value === "suppliers" ? "suppliers" : null);
+            setSelectedCatalogueItem(
+              value === "suppliers" ? "suppliers" : null,
+            );
           }}
         >
           <Tabs.List>
@@ -1672,12 +1173,25 @@ export default function CheckoutPage() {
 
           <Tabs.Panel value="internal" pt="md">
             <Stack gap="md">
-              <Tabs value={itemType} onChange={(v) => { setItemType(v); setSelectedInternalItem(null); setCustomFieldValues({}); }}>
+              <Tabs
+                value={itemType}
+                onChange={(v) => {
+                  setItemType(v);
+                  setSelectedInternalItem(null);
+                  setCustomFieldValues({});
+                }}
+              >
                 <Tabs.List>
-                  <Tabs.Tab value="goods" leftSection={<IconPackage size={16} />}>
+                  <Tabs.Tab
+                    value="goods"
+                    leftSection={<IconPackage size={16} />}
+                  >
                     Products
                   </Tabs.Tab>
-                  <Tabs.Tab value="services" leftSection={<IconPlane size={16} />}>
+                  <Tabs.Tab
+                    value="services"
+                    leftSection={<IconPlane size={16} />}
+                  >
                     Services
                   </Tabs.Tab>
                 </Tabs.List>
@@ -1691,7 +1205,9 @@ export default function CheckoutPage() {
                     onChange={(e) => setInternalSearch(e.currentTarget.value)}
                   />
                   {catalogueProductsLoading ? (
-                    <Group justify="center" py="md"><Loader size="sm" /></Group>
+                    <Group justify="center" py="md">
+                      <Loader size="sm" />
+                    </Group>
                   ) : (
                     <Table highlightOnHover>
                       <Table.Thead>
@@ -1703,26 +1219,46 @@ export default function CheckoutPage() {
                       </Table.Thead>
                       <Table.Tbody>
                         {catalogueProducts
-                          .filter((p: Product) => p.name.toLowerCase().includes(internalSearch.toLowerCase()))
+                          .filter((p: Product) =>
+                            p.name
+                              .toLowerCase()
+                              .includes(internalSearch.toLowerCase()),
+                          )
                           .map((p: Product) => (
                             <Table.Tr
                               key={p.id}
                               style={{
                                 cursor: "pointer",
-                                backgroundColor: selectedInternalItem?.id === p.id && selectedInternalItem?.type === "product"
-                                  ? "var(--mantine-color-blue-0)" : undefined,
+                                backgroundColor:
+                                  selectedInternalItem?.id === p.id &&
+                                  selectedInternalItem?.type === "product"
+                                    ? "var(--mantine-color-blue-0)"
+                                    : undefined,
                               }}
-                              onClick={() => setSelectedInternalItem({ id: p.id, type: "product" })}
+                              onClick={() =>
+                                setSelectedInternalItem({
+                                  id: p.id,
+                                  type: "product",
+                                })
+                              }
                             >
                               <Table.Td>
-                                <Text fw={500} size="sm">{p.name}</Text>
-                                <Text size="xs" c="dimmed">{p.id}</Text>
+                                <Text fw={500} size="sm">
+                                  {p.name}
+                                </Text>
+                                <Text size="xs" c="dimmed">
+                                  {p.id}
+                                </Text>
                               </Table.Td>
                               <Table.Td>
-                                <Badge variant="light" size="sm">{p.category?.name}</Badge>
+                                <Badge variant="light" size="sm">
+                                  {p.category?.name}
+                                </Badge>
                               </Table.Td>
                               <Table.Td>
-                                <Text size="sm" fw={600} c="cyan">{formatCurrency(Number(p.base_price))}</Text>
+                                <Text size="sm" fw={600} c="cyan">
+                                  {formatCurrency(Number(p.base_price))}
+                                </Text>
                               </Table.Td>
                             </Table.Tr>
                           ))}
@@ -1740,7 +1276,9 @@ export default function CheckoutPage() {
                     onChange={(e) => setInternalSearch(e.currentTarget.value)}
                   />
                   {catalogueServicesLoading ? (
-                    <Group justify="center" py="md"><Loader size="sm" /></Group>
+                    <Group justify="center" py="md">
+                      <Loader size="sm" />
+                    </Group>
                   ) : (
                     <Table highlightOnHover>
                       <Table.Thead>
@@ -1752,26 +1290,47 @@ export default function CheckoutPage() {
                       </Table.Thead>
                       <Table.Tbody>
                         {catalogueServices
-                          .filter((s: Service) => s.name.toLowerCase().includes(internalSearch.toLowerCase()))
+                          .filter((s: Service) =>
+                            s.name
+                              .toLowerCase()
+                              .includes(internalSearch.toLowerCase()),
+                          )
                           .map((s: Service) => (
                             <Table.Tr
                               key={s.id}
                               style={{
                                 cursor: "pointer",
-                                backgroundColor: selectedInternalItem?.id === s.id && selectedInternalItem?.type === "service"
-                                  ? "var(--mantine-color-blue-0)" : undefined,
+                                backgroundColor:
+                                  selectedInternalItem?.id === s.id &&
+                                  selectedInternalItem?.type === "service"
+                                    ? "var(--mantine-color-blue-0)"
+                                    : undefined,
                               }}
-                              onClick={() => { setSelectedInternalItem({ id: s.id, type: "service" }); setCustomFieldValues({}); }}
+                              onClick={() => {
+                                setSelectedInternalItem({
+                                  id: s.id,
+                                  type: "service",
+                                });
+                                setCustomFieldValues({});
+                              }}
                             >
                               <Table.Td>
-                                <Text fw={500} size="sm">{s.name}</Text>
-                                <Text size="xs" c="dimmed">{s.id}</Text>
+                                <Text fw={500} size="sm">
+                                  {s.name}
+                                </Text>
+                                <Text size="xs" c="dimmed">
+                                  {s.id}
+                                </Text>
                               </Table.Td>
                               <Table.Td>
-                                <Badge variant="light" size="sm">{s.category?.name}</Badge>
+                                <Badge variant="light" size="sm">
+                                  {s.category?.name}
+                                </Badge>
                               </Table.Td>
                               <Table.Td>
-                                <Text size="sm" fw={600} c="cyan">{formatCurrency(Number(s.base_price))}</Text>
+                                <Text size="sm" fw={600} c="cyan">
+                                  {formatCurrency(Number(s.base_price))}
+                                </Text>
                               </Table.Td>
                             </Table.Tr>
                           ))}
@@ -1792,7 +1351,9 @@ export default function CheckoutPage() {
                   />
                   {(() => {
                     if (selectedInternalItem.type !== "service") return null;
-                    const svc = catalogueServices.find((s: Service) => s.id === selectedInternalItem.id);
+                    const svc = catalogueServices.find(
+                      (s: Service) => s.id === selectedInternalItem.id,
+                    );
                     const fields = svc?.category?.custom_fields;
                     if (!fields?.length) return null;
                     return (
@@ -2010,10 +1571,10 @@ export default function CheckoutPage() {
               !addItemLoading &&
               selectedInternalItem === null &&
               (selectedCatalogueItem === "suppliers" ||
-              (selectedCatalogueItem === null &&
-                (!newItemForm.name ||
-                  !newItemForm.category ||
-                  newItemForm.price <= 0)))
+                (selectedCatalogueItem === null &&
+                  (!newItemForm.name ||
+                    !newItemForm.category ||
+                    newItemForm.price <= 0)))
             }
           >
             Add Item
