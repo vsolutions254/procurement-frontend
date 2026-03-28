@@ -81,7 +81,7 @@ const ProductView = ({ item }: { item: CartProduct }) => {
               {product.id} • {product.category.name}
             </Text>
             <Text size="xs" c="dimmed" mt={4}>
-              Supplier: {product.suppliers[0]?.company_name}
+              Supplier: {product.suppliers[0]?.company_name ?? "N/A"}
             </Text>
           </div>
 

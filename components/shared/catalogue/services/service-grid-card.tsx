@@ -83,7 +83,7 @@ export default function ServiceGridCard({
         <Group gap={4}>
           <IconUser size={12} color="var(--mantine-color-dimmed)" />
           <Text size="xs" c="dimmed" lineClamp={1}>
-            {service.sellable.suppliers[0]?.company_name}
+            {service.sellable.suppliers[0]?.company_name ?? "N/A"}
           </Text>
         </Group>
       </Stack>
